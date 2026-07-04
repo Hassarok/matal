@@ -1,4 +1,5 @@
 import type { Config } from 'tailwindcss';
+import animate from 'tailwindcss-animate';
 
 /**
  * MATAL design-token → Tailwind bridge.
@@ -35,6 +36,7 @@ export default {
         foreground: withOpacity('--color-fg'),
         'muted-foreground': withOpacity('--color-fg-muted'),
         border: withOpacity('--color-border'),
+        input: withOpacity('--color-border'),
         ring: withOpacity('--color-ring'),
         primary: {
           DEFAULT: withOpacity('--color-primary'),
@@ -43,6 +45,27 @@ export default {
         accent: {
           DEFAULT: withOpacity('--color-accent'),
           foreground: withOpacity('--color-accent-fg'),
+        },
+        // Surface-role tokens (map onto MATAL surfaces to avoid theme drift)
+        card: {
+          DEFAULT: withOpacity('--color-surface'),
+          foreground: withOpacity('--color-fg'),
+        },
+        popover: {
+          DEFAULT: withOpacity('--color-surface'),
+          foreground: withOpacity('--color-fg'),
+        },
+        secondary: {
+          DEFAULT: withOpacity('--color-surface-muted'),
+          foreground: withOpacity('--color-fg'),
+        },
+        muted: {
+          DEFAULT: withOpacity('--color-surface-muted'),
+          foreground: withOpacity('--color-fg-muted'),
+        },
+        destructive: {
+          DEFAULT: withOpacity('--color-danger'),
+          foreground: withOpacity('--color-danger-fg'),
         },
         success: withOpacity('--color-success'),
         warning: withOpacity('--color-warning'),
@@ -84,5 +107,5 @@ export default {
       },
     },
   },
-  plugins: [],
+  plugins: [animate],
 } satisfies Config;

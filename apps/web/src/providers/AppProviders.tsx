@@ -4,13 +4,17 @@ import type { ReactNode } from 'react';
 import { queryClient } from '../lib/queryClient';
 import i18n from '../i18n';
 import { ThemeProvider } from './ThemeProvider';
+import { Toaster } from '../components/ui/toaster';
 
 /** Composes all app-wide providers in one place. */
 export function AppProviders({ children }: { children: ReactNode }) {
   return (
     <QueryClientProvider client={queryClient}>
       <I18nextProvider i18n={i18n}>
-        <ThemeProvider>{children}</ThemeProvider>
+        <ThemeProvider>
+          {children}
+          <Toaster />
+        </ThemeProvider>
       </I18nextProvider>
     </QueryClientProvider>
   );

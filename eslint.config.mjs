@@ -57,4 +57,13 @@ export default tseslint.config(
       ],
     },
   },
+  // UI library components idiomatically co-locate `cva` variants and helpers
+  // (shadcn pattern); the fast-refresh export rule doesn't apply to them.
+  {
+    files: ['apps/web/src/components/ui/**/*.{ts,tsx}'],
+    plugins: { 'react-refresh': reactRefresh },
+    rules: {
+      'react-refresh/only-export-components': 'off',
+    },
+  },
 );

@@ -24,8 +24,8 @@ The interface has its own visual identity, subtly inspired by Kurdish heritage
 (mountain and earth tones, golden sunlight, kilim geometry) blended with modern
 product design — with light/dark modes and RTL-ready localization.
 
-> **Status:** Phase 1 (Foundation & Project Setup) complete. See the
-> [Roadmap](#roadmap).
+> **Status:** Phases 1–2 complete (Foundation + Design System). See the
+> [Roadmap](#roadmap). Explore the components at `/style-guide`.
 
 ## Tech Stack
 
@@ -177,13 +177,21 @@ npm test --workspace @matal/web
 
 MATAL uses a token-driven design system (colours, typography, spacing, radius,
 shadows, motion) exposed as CSS variables and surfaced through Tailwind. Brand
-colours are fixed; semantic tokens flip between light and dark. The full
-component library is delivered in Phase 2.
+colours are fixed; semantic tokens flip between light and dark.
+
+Components are built on headless Radix primitives (shadcn-style) and fully
+re-skinned to MATAL's identity — Button, Input, Textarea, Label, Card, Badge,
+Alert, Avatar, Dialog, Dropdown Menu, Toast, Skeleton, Separator — plus brand
+pieces (Logo, star spinner, kilim divider). Everything supports light/dark and
+LTR/RTL and is accessible by default.
+
+Visit **`/style-guide`** — the living component gallery and visual QA page, with
+toggles to preview every component in light/dark and LTR/RTL.
 
 ## Roadmap
 
 1. **Foundation & Project Setup** ✅
-2. Design System
+2. **Design System** ✅
 3. Authentication & User Management
 4. Quiz Builder
 5. Live Game Engine

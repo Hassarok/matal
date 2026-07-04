@@ -8,4 +8,10 @@ describe('Logo', () => {
     expect(screen.getByText('MATAL')).toBeInTheDocument();
     expect(screen.getByRole('img', { name: 'MATAL' })).toBeInTheDocument();
   });
+
+  it('hides the wordmark when markOnly is set', () => {
+    render(<Logo markOnly />);
+    expect(screen.queryByText('MATAL')).not.toBeInTheDocument();
+    expect(screen.getByRole('img', { name: 'MATAL' })).toBeInTheDocument();
+  });
 });

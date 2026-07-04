@@ -17,6 +17,7 @@ export default defineConfig({
   envDir: repoRoot,
   resolve: {
     alias: {
+      '@': fileURLToPath(new URL('./src', import.meta.url)),
       '@matal/shared-types': pkg('shared-types'),
       '@matal/validation': pkg('validation'),
     },

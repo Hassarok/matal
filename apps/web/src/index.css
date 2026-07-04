@@ -35,6 +35,7 @@
     --color-success: 46 122 90;
     --color-warning: 214 158 46;
     --color-danger: 158 43 52;
+    --color-danger-fg: 255 255 255;
   }
 
   .dark {
@@ -52,6 +53,7 @@
     --color-success: 74 180 133;
     --color-warning: 232 178 58;
     --color-danger: 214 90 99;
+    --color-danger-fg: 20 24 27;
   }
 
   *,
