@@ -1,0 +1,43 @@
+{
+  "name": "matal",
+  "version": "0.1.0",
+  "private": true,
+  "description": "MATAL — a modern, Kurdish-inspired interactive quiz & live-game platform.",
+  "license": "UNLICENSED",
+  "engines": {
+    "node": ">=20"
+  },
+  "workspaces": [
+    "apps/*",
+    "packages/*"
+  ],
+  "scripts": {
+    "dev": "concurrently -n api,web -c blue,magenta \"npm:dev:api\" \"npm:dev:web\"",
+    "dev:api": "npm run dev --workspace @matal/api",
+    "dev:web": "npm run dev --workspace @matal/web",
+    "build": "npm run build --workspaces --if-present",
+    "build:packages": "npm run build --workspace @matal/shared-types --workspace @matal/validation",
+    "lint": "npm run lint --workspaces --if-present",
+    "typecheck": "npm run typecheck --workspaces --if-present",
+    "test": "npm run test --workspaces --if-present",
+    "format": "prettier --write \"**/*.{ts,tsx,js,json,md,css}\"",
+    "format:check": "prettier --check \"**/*.{ts,tsx,js,json,md,css}\"",
+    "db:generate": "npm run db:generate --workspace @matal/api",
+    "db:migrate": "npm run db:migrate --workspace @matal/api",
+    "db:seed": "npm run db:seed --workspace @matal/api",
+    "db:studio": "npm run db:studio --workspace @matal/api",
+    "docker:up": "docker compose up -d",
+    "docker:down": "docker compose down",
+    "postinstall": "npm run build:packages"
+  },
+  "devDependencies": {
+    "@eslint/js": "^9.17.0",
+    "concurrently": "^9.1.0",
+    "eslint": "^9.17.0",
+    "eslint-plugin-react-hooks": "^5.1.0",
+    "eslint-plugin-react-refresh": "^0.4.16",
+    "globals": "^15.14.0",
+    "prettier": "^3.4.2",
+    "typescript-eslint": "^8.19.0"
+  }
+}

@@ -1,0 +1,49 @@
+# Dependencies
+node_modules/
+.pnp
+.pnp.js
+
+# Builds / outputs
+dist/
+build/
+out/
+*.tsbuildinfo
+
+# Environment
+.env
+.env.local
+.env.*.local
+!.env.example
+
+# Prisma
+apps/api/prisma/*.db
+apps/api/prisma/*.db-journal
+
+# Logs
+logs/
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+# Coverage / test output
+coverage/
+.nyc_output/
+playwright-report/
+test-results/
+
+# Editor / OS
+.vscode/*
+!.vscode/extensions.json
+!.vscode/settings.json
+.idea/
+.DS_Store
+Thumbs.db
+
+# Vite / cache
+.vite/
+apps/web/dist/
+
+# Uploads (local storage impl)
+apps/api/uploads/

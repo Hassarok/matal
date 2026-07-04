@@ -1,0 +1,47 @@
+// MATAL — Prisma schema
+// Phase 1 establishes the User model and the multi-tenant seam
+// (organizationId). Quizzes, questions, games, reports, etc. are added in
+// their respective phases. Table/column names use snake_case for a clean
+// SQL surface; the generated client stays camelCase.
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+/// Platform-level authorization role. Mirrors `UserRole` in @matal/shared-types.
+enum UserRole {
+  GUEST
+  PLAYER
+  HOST
+  ADMIN
+}
+
+/// A registered account. Anonymous live-game players (nickname only) are not
+/// stored here — only accounts that can host, create, or administer.
+model User {
+  id           String   @id @default(cuid())
+  email        String   @unique
+  username     String   @unique
+  displayName  String   @map("display_name")
+  passwordHash String   @map("password_hash")
+  role         UserRole @default(HOST)
+  avatarUrl    String?  @map("avatar_url")
+  bio          String?
+
+  /// Future multi-tenant seam (organizations / schools / companies).
+  /// Nullable for personal accounts — present from day one so adding
+  /// organizations later is additive rather than a schema refactor.
+  organizationId String? @map("organization_id")
+
+  emailVerified Boolean  @default(false) @map("email_verified")
+  createdAt     DateTime @default(now()) @map("created_at")
+  updatedAt     DateTime @updatedAt @map("updated_at")
+
+  @@index([organizationId])
+  @@map("users")
+}

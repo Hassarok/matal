@@ -1,0 +1,109 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* ─────────────────────────────────────────────────────────────
+   MATAL design tokens
+   Brand palette is fixed; semantic tokens flip per theme.
+   Values are space-separated RGB channels so Tailwind's
+   `rgb(var(--x) / <alpha-value>)` opacity modifiers work.
+   ───────────────────────────────────────────────────────────── */
+@layer base {
+  :root {
+    /* Fixed brand palette (Kurdish-inspired) */
+    --matal-sun: 232 178 58; /* golden sunlight  #E8B23A */
+    --matal-terracotta: 196 86 47; /* warm clay        #C4562F */
+    --matal-mountain: 30 58 52; /* Zagros pine      #1E3A34 */
+    --matal-sky: 46 110 142; /* highland sky     #2E6E8E */
+    --matal-pomegranate: 158 43 52; /* flag red         #9E2B34 */
+    --matal-sand: 250 246 238; /* wool cream       #FAF6EE */
+
+    --radius: 14px;
+
+    /* Light theme semantic tokens */
+    --color-bg: 250 246 238;
+    --color-surface: 255 255 255;
+    --color-surface-muted: 244 238 226;
+    --color-fg: 20 24 27;
+    --color-fg-muted: 90 98 104;
+    --color-border: 226 217 201;
+    --color-ring: 232 178 58;
+    --color-primary: 196 86 47; /* terracotta drives primary actions */
+    --color-primary-fg: 255 255 255;
+    --color-accent: 232 178 58; /* golden sun accent */
+    --color-accent-fg: 20 24 27;
+    --color-success: 46 122 90;
+    --color-warning: 214 158 46;
+    --color-danger: 158 43 52;
+  }
+
+  .dark {
+    --color-bg: 20 24 27;
+    --color-surface: 30 36 40;
+    --color-surface-muted: 38 45 50;
+    --color-fg: 244 240 232;
+    --color-fg-muted: 168 176 180;
+    --color-border: 52 60 66;
+    --color-ring: 232 178 58;
+    --color-primary: 232 178 58; /* golden sun pops on night */
+    --color-primary-fg: 20 24 27;
+    --color-accent: 196 86 47;
+    --color-accent-fg: 255 255 255;
+    --color-success: 74 180 133;
+    --color-warning: 232 178 58;
+    --color-danger: 214 90 99;
+  }
+
+  *,
+  ::before,
+  ::after {
+    border-color: rgb(var(--color-border) / 1);
+  }
+
+  html {
+    -webkit-text-size-adjust: 100%;
+  }
+
+  body {
+    @apply bg-background text-foreground font-sans antialiased;
+    transition:
+      background-color 0.3s ease,
+      color 0.3s ease;
+  }
+
+  :focus-visible {
+    @apply outline-none ring-2 ring-ring ring-offset-2 ring-offset-background;
+  }
+}
+
+/* ─────────────────────────────────────────────────────────────
+   Reusable primitives (a small preview — the full component
+   library arrives in Phase 2).
+   ───────────────────────────────────────────────────────────── */
+@layer components {
+  /* Subtle Kurdish kilim-inspired woven texture for backgrounds. */
+  .bg-kilim {
+    background-image:
+      repeating-linear-gradient(
+        45deg,
+        rgb(var(--matal-sun) / 0.05) 0 2px,
+        transparent 2px 15px
+      ),
+      repeating-linear-gradient(
+        -45deg,
+        rgb(var(--matal-terracotta) / 0.05) 0 2px,
+        transparent 2px 15px
+      );
+    background-size: 21px 21px;
+  }
+
+  /* Warm golden gradient text for hero headings. */
+  .text-gradient-sun {
+    @apply bg-clip-text text-transparent;
+    background-image: linear-gradient(
+      120deg,
+      rgb(var(--matal-terracotta)),
+      rgb(var(--matal-sun))
+    );
+  }
+}
