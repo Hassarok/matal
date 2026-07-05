@@ -32,6 +32,16 @@ export enum Difficulty {
   Hard = 'HARD',
 }
 
+/** Who can discover/access a quiz. */
+export enum QuizVisibility {
+  /** Only the owner. */
+  Private = 'PRIVATE',
+  /** Listed in public discovery/search. */
+  Public = 'PUBLIC',
+  /** Accessible via direct link, hidden from discovery. */
+  Unlisted = 'UNLISTED',
+}
+
 /** Lifecycle state of a hosted live game. */
 export enum GameStatus {
   Lobby = 'LOBBY',

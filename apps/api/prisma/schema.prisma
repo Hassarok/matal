@@ -49,6 +49,7 @@ model User {
 
   refreshTokens RefreshToken[]
   tokens        Token[]
+  quizzes       Quiz[]
 
   @@index([organizationId])
   @@map("users")
@@ -82,4 +83,89 @@ model Token {
 
   @@index([userId, type])
   @@map("tokens")
+}
+
+// ─── Phase 4: Quizzes ────────────────────────────────────────────────
+
+enum Difficulty {
+  EASY
+  MEDIUM
+  HARD
+}
+
+enum QuestionType {
+  MULTIPLE_CHOICE
+  TRUE_FALSE
+  MULTIPLE_SELECT
+  SHORT_ANSWER
+  POLL
+  ORDERING
+}
+
+enum QuizVisibility {
+  PRIVATE
+  PUBLIC
+  UNLISTED
+}
+
+/// A quiz topic/category (Science, History, …). Seeded with sensible defaults.
+model Category {
+  id        String   @id @default(cuid())
+  name      String
+  slug      String   @unique
+  icon      String?
+  createdAt DateTime @default(now()) @map("created_at")
+
+  quizzes Quiz[]
+
+  @@map("categories")
+}
+
+/// A quiz authored by a user. Questions are ordered by `Question.order`.
+model Quiz {
+  id            String         @id @default(cuid())
+  title         String
+  description   String?
+  coverImageUrl String?        @map("cover_image_url")
+  difficulty    Difficulty     @default(MEDIUM)
+  visibility    QuizVisibility @default(PRIVATE)
+  tags          String[]
+
+  ownerId    String    @map("owner_id")
+  owner      User      @relation(fields: [ownerId], references: [id], onDelete: Cascade)
+  categoryId String?   @map("category_id")
+  category   Category? @relation(fields: [categoryId], references: [id], onDelete: SetNull)
+
+  questions Question[]
+
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  @@index([ownerId])
+  @@index([categoryId])
+  @@index([visibility])
+  @@map("quizzes")
+}
+
+/// A single question. Type-specific data (options, correct answers, ordering
+/// items) lives in the `content` JSON column, keeping the six question types
+/// in one table without sparse columns.
+model Question {
+  id               String       @id @default(cuid())
+  quizId           String       @map("quiz_id")
+  quiz             Quiz         @relation(fields: [quizId], references: [id], onDelete: Cascade)
+  type             QuestionType
+  prompt           String
+  mediaUrl         String?      @map("media_url")
+  explanation      String?
+  timeLimitSeconds Int          @default(20) @map("time_limit_seconds")
+  points           Int          @default(1000)
+  order            Int
+  content          Json
+
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  @@index([quizId])
+  @@map("questions")
 }

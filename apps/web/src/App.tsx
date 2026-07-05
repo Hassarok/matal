@@ -4,6 +4,8 @@ import { StyleGuidePage } from './pages/StyleGuidePage';
 import { LoginPage } from './pages/auth/LoginPage';
 import { RegisterPage } from './pages/auth/RegisterPage';
 import { ProfilePage } from './pages/ProfilePage';
+import { MyQuizzesPage } from './pages/quizzes/MyQuizzesPage';
+import { QuizBuilderPage } from './pages/quizzes/QuizBuilderPage';
 import { RequireAuth } from './components/auth/RequireAuth';
 import { RedirectIfAuthed } from './components/auth/RedirectIfAuthed';
 
@@ -34,6 +36,9 @@ export default function App() {
       {/* Authenticated routes */}
       <Route element={<RequireAuth />}>
         <Route path="/profile" element={<ProfilePage />} />
+        <Route path="/quizzes" element={<MyQuizzesPage />} />
+        <Route path="/quizzes/new" element={<QuizBuilderPage />} />
+        <Route path="/quizzes/:id/edit" element={<QuizBuilderPage />} />
       </Route>
 
       <Route path="*" element={<Navigate to="/" replace />} />

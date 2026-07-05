@@ -5,12 +5,15 @@ import { AppConfigModule } from './config/config.module';
 import { PrismaModule } from './database/prisma.module';
 import { SecurityModule } from './modules/security/security.module';
 import { EmailModule } from './modules/email/email.module';
+import { StorageModule } from './modules/storage/storage.module';
 import { AuthSecurityModule } from './modules/auth/auth-security.module';
 import { AiModule } from './modules/ai/ai.module';
 import { HealthModule } from './modules/health/health.module';
 import { RealtimeModule } from './modules/realtime/realtime.module';
 import { UsersModule } from './modules/users/users.module';
 import { AuthModule } from './modules/auth/auth.module';
+import { CategoriesModule } from './modules/categories/categories.module';
+import { QuizzesModule } from './modules/quizzes/quizzes.module';
 
 /**
  * Application composition root.
@@ -27,6 +30,7 @@ import { AuthModule } from './modules/auth/auth.module';
     PrismaModule,
     SecurityModule,
     EmailModule,
+    StorageModule,
     AuthSecurityModule,
     AiModule,
     // Global rate limiting: 100 requests / minute per IP by default;
@@ -38,6 +42,8 @@ import { AuthModule } from './modules/auth/auth.module';
     RealtimeModule,
     UsersModule,
     AuthModule,
+    CategoriesModule,
+    QuizzesModule,
   ],
   providers: [{ provide: APP_GUARD, useClass: ThrottlerGuard }],
 })

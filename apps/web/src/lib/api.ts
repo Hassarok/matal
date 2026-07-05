@@ -3,7 +3,11 @@ import type {
   ApiResponse,
   HealthStatus,
   MessageResponse,
+  Paginated,
+  PublicCategory,
   PublicUser,
+  QuizDetail,
+  QuizListItem,
   SessionResponse,
 } from '@matal/shared-types';
 import type {
@@ -11,6 +15,7 @@ import type {
   LoginInput,
   RegisterInput,
   ResetPasswordInput,
+  SaveQuizInput,
   UpdateProfileInput,
 } from '@matal/validation';
 import { apiBaseUrl } from '../config/env';
@@ -75,6 +80,11 @@ async function request<T>(path: string, init?: RequestInit, allowRetry = true): 
     }
   }
 
+  // No content (e.g. 204 from DELETE) — nothing to parse.
+  if (response.status === 204) {
+    return undefined as T;
+  }
+
   const body = (await response.json().catch(() => null)) as ApiResponse<T> | null;
 
   if (!body) {
@@ -95,6 +105,31 @@ function post<T>(path: string, body?: unknown): Promise<T> {
 
 function patch<T>(path: string, body: unknown): Promise<T> {
   return request<T>(path, { method: 'PATCH', body: JSON.stringify(body) });
+}
+
+function put<T>(path: string, body: unknown): Promise<T> {
+  return request<T>(path, { method: 'PUT', body: JSON.stringify(body) });
+}
+
+function del<T>(path: string): Promise<T> {
+  return request<T>(path, { method: 'DELETE' });
+}
+
+function buildQuery(params: Record<string, string | number | undefined>): string {
+  const search = new URLSearchParams();
+  for (const [key, value] of Object.entries(params)) {
+    if (value !== undefined && value !== '') search.set(key, String(value));
+  }
+  const query = search.toString();
+  return query ? `?${query}` : '';
+}
+
+export interface QuizListParams {
+  page?: number;
+  pageSize?: number;
+  search?: string;
+  categoryId?: string;
+  difficulty?: string;
 }
 
 export const api = {
@@ -120,5 +155,28 @@ export const api = {
       patch<PublicUser>('/users/me', input),
     changePassword: (input: ChangePasswordInput) =>
       post<MessageResponse>('/users/me/change-password', input),
+  },
+
+  categories: {
+    list: () => request<PublicCategory[]>('/categories'),
+  },
+
+  quizzes: {
+    list: (params: QuizListParams = {}) =>
+      request<Paginated<QuizListItem>>(
+        `/quizzes${buildQuery({
+          page: params.page,
+          pageSize: params.pageSize,
+          search: params.search,
+          categoryId: params.categoryId,
+          difficulty: params.difficulty,
+        })}`,
+      ),
+    get: (id: string) => request<QuizDetail>(`/quizzes/${id}`),
+    create: (input: SaveQuizInput) => post<QuizDetail>('/quizzes', input),
+    update: (id: string, input: SaveQuizInput) =>
+      put<QuizDetail>(`/quizzes/${id}`, input),
+    duplicate: (id: string) => post<QuizDetail>(`/quizzes/${id}/duplicate`),
+    remove: (id: string) => del<void>(`/quizzes/${id}`),
   },
 };

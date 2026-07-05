@@ -34,3 +34,10 @@ export type {
   ResetPasswordInput,
   VerifyEmailInput,
 } from './auth';
+export {
+  questionSchema,
+  quizMetaSchema,
+  saveQuizSchema,
+  quizListQuerySchema,
+} from './quiz';
+export type { QuestionInput, SaveQuizInput, QuizListQuery } from './quiz';

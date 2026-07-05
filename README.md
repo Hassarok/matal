@@ -24,8 +24,8 @@ The interface has its own visual identity, subtly inspired by Kurdish heritage
 (mountain and earth tones, golden sunlight, kilim geometry) blended with modern
 product design — with light/dark modes and RTL-ready localization.
 
-> **Status:** Phases 1–3 complete (Foundation + Design System + Auth). See the
-> [Roadmap](#roadmap). Explore the components at `/style-guide`.
+> **Status:** Phases 1–4 complete (Foundation + Design System + Auth + Quiz
+> Builder). See the [Roadmap](#roadmap). Explore the components at `/style-guide`.
 
 ## Tech Stack
 
@@ -204,12 +204,26 @@ toggles to preview every component in light/dark and LTR/RTL.
 - Frontend: `Register`, `Login`, and `Profile` pages built on the design system
   with `react-hook-form` + Zod, silent token refresh, and route guards.
 
+## Quiz Builder
+
+- **Quiz** + **Question** models with a seeded **Category** table. Owner-scoped
+  CRUD, search/filter, and duplicate — with ownership enforced server-side.
+- **Six question types** (multiple choice, true/false, multiple select, short
+  answer, poll, ordering), each validated by a shared Zod discriminated union.
+  Type-specific data is stored in a JSON column, keeping one clean table.
+- **Builder UI**: quiz metadata (title, description, cover URL, category,
+  difficulty, visibility, tags) + a per-type question editor with up/down
+  reordering, plus a **My Quizzes** management page (search, filter, edit,
+  duplicate, delete).
+- Media is referenced by **image URL** for now; a `StorageService` seam is in
+  place so real uploads can be added later without refactoring.
+
 ## Roadmap
 
 1. **Foundation & Project Setup** ✅
 2. **Design System** ✅
 3. **Authentication & User Management** ✅
-4. Quiz Builder
+4. **Quiz Builder** ✅
 5. Live Game Engine
 6. Dashboard & Search
 7. Reports & Analytics

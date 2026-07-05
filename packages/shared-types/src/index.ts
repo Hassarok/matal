@@ -13,6 +13,7 @@ export {
   UserRole,
   QuestionType,
   Difficulty,
+  QuizVisibility,
   GameStatus,
   Locale,
   TextDirection,
@@ -30,3 +31,11 @@ export type {
 export type { HealthStatus, ServiceState } from './health';
 export type { PublicUser } from './user';
 export type { MessageResponse, SessionResponse } from './auth';
+export type {
+  ChoiceOption,
+  QuestionContent,
+  PublicQuestion,
+  PublicCategory,
+  QuizListItem,
+  QuizDetail,
+} from './quiz';
