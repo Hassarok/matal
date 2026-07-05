@@ -29,3 +29,4 @@ export type {
 } from './api';
 export type { HealthStatus, ServiceState } from './health';
 export type { PublicUser } from './user';
+export type { MessageResponse, SessionResponse } from './auth';

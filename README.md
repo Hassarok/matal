@@ -24,7 +24,7 @@ The interface has its own visual identity, subtly inspired by Kurdish heritage
 (mountain and earth tones, golden sunlight, kilim geometry) blended with modern
 product design — with light/dark modes and RTL-ready localization.
 
-> **Status:** Phases 1–2 complete (Foundation + Design System). See the
+> **Status:** Phases 1–3 complete (Foundation + Design System + Auth). See the
 > [Roadmap](#roadmap). Explore the components at `/style-guide`.
 
 ## Tech Stack
@@ -129,7 +129,7 @@ npm run dev
 | Role  | Email             | Password      |
 | ----- | ----------------- | ------------- |
 | Admin | `admin@matal.dev` | `ChangeMe123` |
-| Host  | `host@matal.dev`  | `ChangeMe123` |
+| User  | `user@matal.dev`  | `ChangeMe123` |
 
 ## Scripts
 
@@ -188,11 +188,27 @@ LTR/RTL and is accessible by default.
 Visit **`/style-guide`** — the living component gallery and visual QA page, with
 toggles to preview every component in light/dark and LTR/RTL.
 
+## Authentication
+
+- **JWT access + rotating refresh tokens** stored in httpOnly, SameSite cookies
+  (XSS/CSRF-resistant). The access token is a short-lived JWT; the refresh token
+  is an opaque, DB-backed value that is rotated on every use and revocable.
+- **Argon2id** password hashing; **role-based access control** (`USER`, `ADMIN`)
+  via `@Roles()` + guards.
+- **Rate limiting** on sensitive endpoints (`@nestjs/throttler`) and shared
+  **Zod** validation on both client and server.
+- **Email verification & password reset** are wired end-to-end on the backend;
+  in development the links are printed to the API console (no email provider
+  required). Swap the `EmailService` binding for SMTP later — no consumer
+  changes.
+- Frontend: `Register`, `Login`, and `Profile` pages built on the design system
+  with `react-hook-form` + Zod, silent token refresh, and route guards.
+
 ## Roadmap
 
 1. **Foundation & Project Setup** ✅
 2. **Design System** ✅
-3. Authentication & User Management
+3. **Authentication & User Management** ✅
 4. Quiz Builder
 5. Live Game Engine
 6. Dashboard & Search

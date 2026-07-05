@@ -2,6 +2,7 @@ import { Logger, VersioningType } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { NestFactory } from '@nestjs/core';
 import helmet from 'helmet';
+import cookieParser from 'cookie-parser';
 import { AppModule } from './app.module';
 import type { AppConfig } from './config/configuration';
 import { AllExceptionsFilter } from './common/filters/all-exceptions.filter';
@@ -16,8 +17,9 @@ async function bootstrap(): Promise<void> {
   const globalPrefix = config.get('app.globalPrefix', { infer: true });
   const corsOrigins = config.get('app.corsOrigins', { infer: true });
 
-  // ── Security headers ──────────────────────────────────────────────
+  // ── Security headers & cookie parsing ─────────────────────────────
   app.use(helmet());
+  app.use(cookieParser());
 
   // ── CORS (credentialed, explicit allow-list) ──────────────────────
   app.enableCors({

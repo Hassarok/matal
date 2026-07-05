@@ -1,8 +1,9 @@
 // MATAL — Prisma schema
-// Phase 1 establishes the User model and the multi-tenant seam
-// (organizationId). Quizzes, questions, games, reports, etc. are added in
-// their respective phases. Table/column names use snake_case for a clean
-// SQL surface; the generated client stays camelCase.
+// Phase 1: User + multi-tenant seam (organizationId).
+// Phase 3: auth — role simplified to {USER, ADMIN}, refresh-token rotation,
+// and email verification / password reset tokens.
+// Quizzes, questions, games, reports, etc. arrive in their respective phases.
+// Table/column names use snake_case; the generated client stays camelCase.
 
 generator client {
   provider = "prisma-client-js"
@@ -13,23 +14,27 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-/// Platform-level authorization role. Mirrors `UserRole` in @matal/shared-types.
+/// Platform authorization role. Mirrors `UserRole` in @matal/shared-types.
 enum UserRole {
-  GUEST
-  PLAYER
-  HOST
+  USER
   ADMIN
 }
 
+/// Purpose of a short-lived, single-use token.
+enum TokenType {
+  EMAIL_VERIFICATION
+  PASSWORD_RESET
+}
+
 /// A registered account. Anonymous live-game players (nickname only) are not
-/// stored here — only accounts that can host, create, or administer.
+/// stored here — only accounts that can sign in.
 model User {
   id           String   @id @default(cuid())
   email        String   @unique
   username     String   @unique
   displayName  String   @map("display_name")
   passwordHash String   @map("password_hash")
-  role         UserRole @default(HOST)
+  role         UserRole @default(USER)
   avatarUrl    String?  @map("avatar_url")
   bio          String?
 
@@ -42,6 +47,39 @@ model User {
   createdAt     DateTime @default(now()) @map("created_at")
   updatedAt     DateTime @updatedAt @map("updated_at")
 
+  refreshTokens RefreshToken[]
+  tokens        Token[]
+
   @@index([organizationId])
   @@map("users")
+}
+
+/// A hashed refresh token. One row per active session; rotated on every use
+/// (old row revoked, new row issued) so a stolen token is single-use.
+model RefreshToken {
+  id        String    @id @default(cuid())
+  userId    String    @map("user_id")
+  user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  tokenHash String    @unique @map("token_hash")
+  expiresAt DateTime  @map("expires_at")
+  createdAt DateTime  @default(now()) @map("created_at")
+  revokedAt DateTime? @map("revoked_at")
+
+  @@index([userId])
+  @@map("refresh_tokens")
+}
+
+/// A hashed, single-use token for email verification or password reset.
+model Token {
+  id         String    @id @default(cuid())
+  userId     String    @map("user_id")
+  user       User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  type       TokenType
+  tokenHash  String    @unique @map("token_hash")
+  expiresAt  DateTime  @map("expires_at")
+  createdAt  DateTime  @default(now()) @map("created_at")
+  consumedAt DateTime? @map("consumed_at")
+
+  @@index([userId, type])
+  @@map("tokens")
 }

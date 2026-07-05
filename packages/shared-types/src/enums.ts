@@ -3,11 +3,15 @@
  * These are the single source of truth for both the API and the web client.
  */
 
-/** Platform-level authorization roles. */
+/**
+ * Platform-level authorization roles.
+ * Kept intentionally minimal for now (a standard user and an administrator);
+ * additional roles can be introduced later without touching consumers.
+ */
 export enum UserRole {
-  Guest = 'GUEST',
-  Player = 'PLAYER',
-  Host = 'HOST',
+  /** A standard registered account (can play, and — from Phase 4 — create). */
+  User = 'USER',
+  /** Platform administrator. */
   Admin = 'ADMIN',
 }
 

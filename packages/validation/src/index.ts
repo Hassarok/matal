@@ -16,3 +16,21 @@ export {
 } from './primitives';
 export { paginationQuerySchema } from './pagination';
 export type { PaginationQuery } from './pagination';
+export {
+  registerSchema,
+  loginSchema,
+  updateProfileSchema,
+  changePasswordSchema,
+  requestPasswordResetSchema,
+  resetPasswordSchema,
+  verifyEmailSchema,
+} from './auth';
+export type {
+  RegisterInput,
+  LoginInput,
+  UpdateProfileInput,
+  ChangePasswordInput,
+  RequestPasswordResetInput,
+  ResetPasswordInput,
+  VerifyEmailInput,
+} from './auth';
