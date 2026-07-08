@@ -29,6 +29,20 @@ export default defineConfig({
   build: {
     outDir: 'dist',
     sourcemap: true,
+    rollupOptions: {
+      output: {
+        // Split heavy/optional vendors into their own long-cached chunks so the
+        // eager bundle stays lean (socket.io only loads on game routes; i18n and
+        // form libs are similarly isolated from the core react/router/query core).
+        manualChunks: {
+          'vendor-react': ['react', 'react-dom', 'react-router-dom'],
+          'vendor-query': ['@tanstack/react-query'],
+          'vendor-socket': ['socket.io-client'],
+          'vendor-i18n': ['i18next', 'react-i18next'],
+          'vendor-forms': ['react-hook-form', '@hookform/resolvers', 'zod'],
+        },
+      },
+    },
   },
   test: {
     environment: 'jsdom',

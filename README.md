@@ -24,10 +24,8 @@ The interface has its own visual identity, subtly inspired by Kurdish heritage
 (mountain and earth tones, golden sunlight, kilim geometry) blended with modern
 product design — with light/dark modes and RTL-ready localization.
 
-> **Status:** Phases 1–8 complete (Foundation + Design System + Auth + Quiz
-> Builder + Live Game Engine + Dashboard & Search + Reports & Analytics +
-> Admin Panel). See the [Roadmap](#roadmap). Explore the components at
-> `/style-guide`.
+> **Status:** Phases 1–9 complete (through Performance, Security & Testing).
+> See the [Roadmap](#roadmap). Explore the components at `/style-guide`.
 
 ## Tech Stack
 
@@ -276,6 +274,20 @@ toggles to preview every component in light/dark and LTR/RTL.
 - **Quiz moderation** — searchable, paginated list of all quizzes across owners
   with delete.
 
+## Performance, Security & Testing
+
+- **Security** (in place since earlier phases, verified here): Helmet headers, a
+  credentialed CORS allow-list, global + per-route rate limiting
+  (`@nestjs/throttler`), httpOnly/SameSite JWT cookies with rotating refresh
+  tokens, role guards, shared Zod validation, and a global exception filter that
+  never leaks internals to clients.
+- **Performance:** route-level code splitting (`React.lazy` + `Suspense`) and
+  manual vendor chunking, so the initial bundle stays lean and heavy/optional
+  deps (socket.io, i18n, forms) load only when needed — no chunk over ~350 kB.
+- **Testing:** expanded coverage — unit tests for the games reports/analytics
+  aggregation and admin self-guards/mapping (API), plus game-UI component tests
+  (answer input, leaderboard) on the web. **71 tests** across both apps.
+
 ## Roadmap
 
 1. **Foundation & Project Setup** ✅
@@ -286,7 +298,7 @@ toggles to preview every component in light/dark and LTR/RTL.
 6. **Dashboard & Search** ✅
 7. **Reports & Analytics** ✅
 8. **Admin Panel** ✅
-9. Performance, Security & Testing
+9. **Performance, Security & Testing** ✅
 10. Deployment & Documentation
 
 ## License
