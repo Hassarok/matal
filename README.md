@@ -24,9 +24,10 @@ The interface has its own visual identity, subtly inspired by Kurdish heritage
 (mountain and earth tones, golden sunlight, kilim geometry) blended with modern
 product design — with light/dark modes and RTL-ready localization.
 
-> **Status:** Phases 1–7 complete (Foundation + Design System + Auth + Quiz
-> Builder + Live Game Engine + Dashboard & Search + Reports & Analytics). See
-> the [Roadmap](#roadmap). Explore the components at `/style-guide`.
+> **Status:** Phases 1–8 complete (Foundation + Design System + Auth + Quiz
+> Builder + Live Game Engine + Dashboard & Search + Reports & Analytics +
+> Admin Panel). See the [Roadmap](#roadmap). Explore the components at
+> `/style-guide`.
 
 ## Tech Stack
 
@@ -263,6 +264,18 @@ toggles to preview every component in light/dark and LTR/RTL.
   paginated list of completed games, each linking to its detailed report.
   Recent games on the dashboard link straight through.
 
+## Admin Panel
+
+- **Role-gated** — every `/api/v1/admin/*` route requires an authenticated
+  `ADMIN` (JWT + `RolesGuard`), and the `/admin` page is behind an admin-only
+  route guard; the entry only appears in the menu for admins.
+- **Platform overview** — totals for users, quizzes, questions and games.
+- **User management** — searchable, paginated user list with per-user quiz/game
+  counts; promote/demote between `USER` and `ADMIN`; delete accounts (with
+  guards preventing admins from changing or deleting their own).
+- **Quiz moderation** — searchable, paginated list of all quizzes across owners
+  with delete.
+
 ## Roadmap
 
 1. **Foundation & Project Setup** ✅
@@ -272,7 +285,7 @@ toggles to preview every component in light/dark and LTR/RTL.
 5. **Live Game Engine** ✅
 6. **Dashboard & Search** ✅
 7. **Reports & Analytics** ✅
-8. Admin Panel
+8. **Admin Panel** ✅
 9. Performance, Security & Testing
 10. Deployment & Documentation
 

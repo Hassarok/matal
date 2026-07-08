@@ -4,8 +4,10 @@ import {
   LayoutDashboard,
   LibraryBig,
   LogOut,
+  ShieldCheck,
   User as UserIcon,
 } from 'lucide-react';
+import { UserRole } from '@matal/shared-types';
 import { Logo } from '@/components/brand/Logo';
 import { ThemeToggle } from '@/components/ThemeToggle';
 import { LanguageSwitcher } from '@/components/LanguageSwitcher';
@@ -77,6 +79,13 @@ function UserMenu() {
             <UserIcon /> Profile
           </Link>
         </DropdownMenuItem>
+        {user.role === UserRole.Admin && (
+          <DropdownMenuItem asChild>
+            <Link to="/admin">
+              <ShieldCheck /> Admin
+            </Link>
+          </DropdownMenuItem>
+        )}
         <DropdownMenuSeparator />
         <DropdownMenuItem destructive onSelect={signOut}>
           <LogOut /> Sign out

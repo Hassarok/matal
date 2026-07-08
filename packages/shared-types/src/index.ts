@@ -41,6 +41,7 @@ export type {
   QuizListItem,
   QuizDetail,
 } from './quiz';
+export type { AdminStats, AdminUser, AdminQuizItem } from './admin';
 export type {
   LobbyPlayer,
   LobbyState,

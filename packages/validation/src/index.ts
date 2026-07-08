@@ -42,3 +42,5 @@ export {
   quizSortOptions,
 } from './quiz';
 export type { QuestionInput, SaveQuizInput, QuizListQuery, QuizSort } from './quiz';
+export { adminListQuerySchema, updateUserRoleSchema } from './admin';
+export type { AdminListQuery, UpdateUserRoleInput } from './admin';

@@ -13,8 +13,10 @@ import { GameReportPage } from './pages/reports/GameReportPage';
 import { JoinGamePage } from './pages/game/JoinGamePage';
 import { PlayGamePage } from './pages/game/PlayGamePage';
 import { HostGamePage } from './pages/game/HostGamePage';
+import { AdminPage } from './pages/admin/AdminPage';
 import { RequireAuth } from './components/auth/RequireAuth';
 import { RedirectIfAuthed } from './components/auth/RedirectIfAuthed';
+import { UserRole } from '@matal/shared-types';
 
 /** Application routes. Feature routes (dashboard, quiz builder, game…) land in later phases. */
 export default function App() {
@@ -55,6 +57,11 @@ export default function App() {
         <Route path="/host/:quizId" element={<HostGamePage />} />
         <Route path="/reports" element={<ReportsPage />} />
         <Route path="/games/:id" element={<GameReportPage />} />
+      </Route>
+
+      {/* Admin-only routes */}
+      <Route element={<RequireAuth role={UserRole.Admin} />}>
+        <Route path="/admin" element={<AdminPage />} />
       </Route>
 
       <Route path="*" element={<Navigate to="/" replace />} />

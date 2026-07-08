@@ -1,4 +1,7 @@
 import type {
+  AdminQuizItem,
+  AdminStats,
+  AdminUser,
   ApiErrorCode,
   ApiResponse,
   GameReport,
@@ -12,6 +15,7 @@ import type {
   QuizDetail,
   QuizListItem,
   SessionResponse,
+  UserRole,
 } from '@matal/shared-types';
 import type { QuizSort } from '@matal/validation';
 import type {
@@ -193,5 +197,21 @@ export const api = {
       ),
     analytics: () => request<HostAnalytics>('/games/analytics'),
     report: (id: string) => request<GameReport>(`/games/${id}/report`),
+  },
+
+  admin: {
+    stats: () => request<AdminStats>('/admin/stats'),
+    users: (params: { page?: number; search?: string } = {}) =>
+      request<Paginated<AdminUser>>(
+        `/admin/users${buildQuery({ page: params.page, search: params.search })}`,
+      ),
+    updateUserRole: (id: string, role: UserRole) =>
+      patch<AdminUser>(`/admin/users/${id}/role`, { role }),
+    deleteUser: (id: string) => del<void>(`/admin/users/${id}`),
+    quizzes: (params: { page?: number; search?: string } = {}) =>
+      request<Paginated<AdminQuizItem>>(
+        `/admin/quizzes${buildQuery({ page: params.page, search: params.search })}`,
+      ),
+    deleteQuiz: (id: string) => del<void>(`/admin/quizzes/${id}`),
   },
 };
