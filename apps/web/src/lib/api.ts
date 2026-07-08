@@ -1,6 +1,7 @@
 import type {
   ApiErrorCode,
   ApiResponse,
+  GameSummary,
   HealthStatus,
   MessageResponse,
   Paginated,
@@ -10,6 +11,7 @@ import type {
   QuizListItem,
   SessionResponse,
 } from '@matal/shared-types';
+import type { QuizSort } from '@matal/validation';
 import type {
   ChangePasswordInput,
   LoginInput,
@@ -130,6 +132,7 @@ export interface QuizListParams {
   search?: string;
   categoryId?: string;
   difficulty?: string;
+  sort?: QuizSort;
 }
 
 export const api = {
@@ -170,6 +173,7 @@ export const api = {
           search: params.search,
           categoryId: params.categoryId,
           difficulty: params.difficulty,
+          sort: params.sort,
         })}`,
       ),
     get: (id: string) => request<QuizDetail>(`/quizzes/${id}`),
@@ -178,5 +182,12 @@ export const api = {
       put<QuizDetail>(`/quizzes/${id}`, input),
     duplicate: (id: string) => post<QuizDetail>(`/quizzes/${id}/duplicate`),
     remove: (id: string) => del<void>(`/quizzes/${id}`),
+  },
+
+  games: {
+    history: (params: { page?: number; pageSize?: number } = {}) =>
+      request<Paginated<GameSummary>>(
+        `/games/history${buildQuery({ page: params.page, pageSize: params.pageSize })}`,
+      ),
   },
 };

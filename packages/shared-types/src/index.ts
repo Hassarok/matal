@@ -52,6 +52,7 @@ export type {
   AnswerDistribution,
   QuestionReveal,
   GamePodium,
+  GameSummary,
   GameError,
   GameCreated,
   PlayerJoined,

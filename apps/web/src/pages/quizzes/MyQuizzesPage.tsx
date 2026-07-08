@@ -2,6 +2,8 @@ import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import {
+  ChevronLeft,
+  ChevronRight,
   Copy,
   FileQuestion,
   MoreVertical,
@@ -12,6 +14,7 @@ import {
   Trash2,
 } from 'lucide-react';
 import { Difficulty, type QuizListItem } from '@matal/shared-types';
+import type { QuizSort } from '@matal/validation';
 import { TopBar } from '@/components/layout/TopBar';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -49,6 +52,12 @@ const DIFFICULTY_BADGE: Record<Difficulty, 'success' | 'accent' | 'destructive'>
   [Difficulty.Easy]: 'success',
   [Difficulty.Medium]: 'accent',
   [Difficulty.Hard]: 'destructive',
+};
+
+const SORT_LABELS: Record<QuizSort, string> = {
+  recent: 'Recently updated',
+  oldest: 'Oldest first',
+  title: 'Title (A–Z)',
 };
 
 function QuizCard({
@@ -101,7 +110,14 @@ function QuizCard({
         </div>
       </div>
       <CardHeader className="flex-1">
-        <CardTitle className="line-clamp-1 text-base">{quiz.title}</CardTitle>
+        <CardTitle className="line-clamp-1 text-base">
+          <Link
+            to={`/quizzes/${quiz.id}`}
+            className="rounded-sm hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+          >
+            {quiz.title}
+          </Link>
+        </CardTitle>
         {quiz.description && (
           <CardDescription className="line-clamp-2">{quiz.description}</CardDescription>
         )}
@@ -160,6 +176,8 @@ export function MyQuizzesPage() {
   const [debouncedSearch, setDebouncedSearch] = useState('');
   const [categoryId, setCategoryId] = useState('');
   const [difficulty, setDifficulty] = useState('');
+  const [sort, setSort] = useState<QuizSort>('recent');
+  const [page, setPage] = useState(1);
   const [deletingId, setDeletingId] = useState<string | null>(null);
 
   useEffect(() => {
@@ -167,14 +185,22 @@ export function MyQuizzesPage() {
     return () => clearTimeout(timer);
   }, [search]);
 
+  // Any filter/sort change resets to the first page.
+  useEffect(() => {
+    setPage(1);
+  }, [debouncedSearch, categoryId, difficulty, sort]);
+
   const listQuery = useQuery({
-    queryKey: ['quizzes', { search: debouncedSearch, categoryId, difficulty }],
+    queryKey: ['quizzes', { search: debouncedSearch, categoryId, difficulty, sort, page }],
     queryFn: () =>
       api.quizzes.list({
         search: debouncedSearch || undefined,
         categoryId: categoryId || undefined,
         difficulty: difficulty || undefined,
+        sort,
+        page,
       }),
+    placeholderData: (prev) => prev,
   });
 
   const duplicateMutation = useMutation({
@@ -195,6 +221,7 @@ export function MyQuizzesPage() {
   });
 
   const quizzes = listQuery.data?.items ?? [];
+  const meta = listQuery.data?.meta;
   const isEmpty = !listQuery.isLoading && quizzes.length === 0;
 
   return (
@@ -256,6 +283,18 @@ export function MyQuizzesPage() {
                 </option>
               ))}
             </Select>
+            <Select
+              value={sort}
+              onChange={(e) => setSort(e.target.value as QuizSort)}
+              aria-label="Sort quizzes"
+              className="sm:w-44"
+            >
+              {(Object.keys(SORT_LABELS) as QuizSort[]).map((option) => (
+                <option key={option} value={option}>
+                  {SORT_LABELS[option]}
+                </option>
+              ))}
+            </Select>
           </div>
 
           {/* Results */}
@@ -292,6 +331,31 @@ export function MyQuizzesPage() {
                   onDelete={() => setDeletingId(quiz.id)}
                 />
               ))}
+            </div>
+          )}
+
+          {/* Pagination */}
+          {meta && meta.totalPages > 1 && (
+            <div className="flex items-center justify-center gap-4">
+              <Button
+                variant="outline"
+                size="sm"
+                disabled={page <= 1}
+                onClick={() => setPage((p) => Math.max(1, p - 1))}
+              >
+                <ChevronLeft /> Previous
+              </Button>
+              <span className="text-sm text-muted-foreground">
+                Page {meta.page} of {meta.totalPages}
+              </span>
+              <Button
+                variant="outline"
+                size="sm"
+                disabled={page >= meta.totalPages}
+                onClick={() => setPage((p) => p + 1)}
+              >
+                Next <ChevronRight />
+              </Button>
             </div>
           )}
         </main>

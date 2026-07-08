@@ -24,9 +24,9 @@ The interface has its own visual identity, subtly inspired by Kurdish heritage
 (mountain and earth tones, golden sunlight, kilim geometry) blended with modern
 product design — with light/dark modes and RTL-ready localization.
 
-> **Status:** Phases 1–5 complete (Foundation + Design System + Auth + Quiz
-> Builder + Live Game Engine). See the [Roadmap](#roadmap). Explore the
-> components at `/style-guide`.
+> **Status:** Phases 1–6 complete (Foundation + Design System + Auth + Quiz
+> Builder + Live Game Engine + Dashboard & Search). See the
+> [Roadmap](#roadmap). Explore the components at `/style-guide`.
 
 ## Tech Stack
 
@@ -237,6 +237,19 @@ toggles to preview every component in light/dark and LTR/RTL.
   to scale across instances); only completed games are persisted to Postgres
   (`games`, `game_players`, `game_responses`) to feed reports & analytics.
 
+## Dashboard & Search
+
+- **Personal dashboard** (`/dashboard`, the post-sign-in home): a greeting,
+  quick actions (new quiz, my quizzes, join a game), and at-a-glance lists of
+  your most recent quizzes and hosted games.
+- **Game history** — a read endpoint (`GET /api/v1/games/history`) serves each
+  host's completed games (winner, players, date) from the Phase 5 tables.
+- **Quiz search & management** — the owner-scoped quiz list gains sorting
+  (recently updated / oldest / title) and pagination on top of the existing
+  search and category/difficulty filters.
+- **Quiz preview** (`/quizzes/:id`) — a read-only view of a quiz and its full
+  answer key, with one-click **Host** and **Edit** actions.
+
 ## Roadmap
 
 1. **Foundation & Project Setup** ✅
@@ -244,7 +257,7 @@ toggles to preview every component in light/dark and LTR/RTL.
 3. **Authentication & User Management** ✅
 4. **Quiz Builder** ✅
 5. **Live Game Engine** ✅
-6. Dashboard & Search
+6. **Dashboard & Search** ✅
 7. Reports & Analytics
 8. Admin Panel
 9. Performance, Security & Testing

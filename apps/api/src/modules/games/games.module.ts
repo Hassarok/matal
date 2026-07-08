@@ -1,5 +1,6 @@
 import { Module } from '@nestjs/common';
 import { GamesService } from './games.service';
+import { GamesController } from './games.controller';
 import { GameGateway } from './game.gateway';
 import { GameStateStore, InMemoryGameStateStore } from './game-state.store';
 
@@ -9,6 +10,7 @@ import { GameStateStore, InMemoryGameStateStore } from './game-state.store';
  * global AuthSecurityModule.
  */
 @Module({
+  controllers: [GamesController],
   providers: [
     GamesService,
     GameGateway,

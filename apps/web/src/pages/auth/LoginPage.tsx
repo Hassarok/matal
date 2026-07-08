@@ -18,7 +18,7 @@ export function LoginPage() {
   const location = useLocation();
   const [formError, setFormError] = useState<string | null>(null);
 
-  const from = (location.state as { from?: string } | null)?.from ?? '/profile';
+  const from = (location.state as { from?: string } | null)?.from ?? '/dashboard';
 
   const {
     register,

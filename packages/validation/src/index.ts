@@ -39,5 +39,6 @@ export {
   quizMetaSchema,
   saveQuizSchema,
   quizListQuerySchema,
+  quizSortOptions,
 } from './quiz';
-export type { QuestionInput, SaveQuizInput, QuizListQuery } from './quiz';
+export type { QuestionInput, SaveQuizInput, QuizListQuery, QuizSort } from './quiz';

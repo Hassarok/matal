@@ -4,8 +4,10 @@ import { StyleGuidePage } from './pages/StyleGuidePage';
 import { LoginPage } from './pages/auth/LoginPage';
 import { RegisterPage } from './pages/auth/RegisterPage';
 import { ProfilePage } from './pages/ProfilePage';
+import { DashboardPage } from './pages/DashboardPage';
 import { MyQuizzesPage } from './pages/quizzes/MyQuizzesPage';
 import { QuizBuilderPage } from './pages/quizzes/QuizBuilderPage';
+import { QuizDetailPage } from './pages/quizzes/QuizDetailPage';
 import { JoinGamePage } from './pages/game/JoinGamePage';
 import { PlayGamePage } from './pages/game/PlayGamePage';
 import { HostGamePage } from './pages/game/HostGamePage';
@@ -42,9 +44,11 @@ export default function App() {
 
       {/* Authenticated routes */}
       <Route element={<RequireAuth />}>
+        <Route path="/dashboard" element={<DashboardPage />} />
         <Route path="/profile" element={<ProfilePage />} />
         <Route path="/quizzes" element={<MyQuizzesPage />} />
         <Route path="/quizzes/new" element={<QuizBuilderPage />} />
+        <Route path="/quizzes/:id" element={<QuizDetailPage />} />
         <Route path="/quizzes/:id/edit" element={<QuizBuilderPage />} />
         <Route path="/host/:quizId" element={<HostGamePage />} />
       </Route>

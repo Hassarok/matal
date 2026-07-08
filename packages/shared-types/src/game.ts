@@ -112,6 +112,18 @@ export interface GamePodium {
   playerCount: number;
 }
 
+/** A completed game as shown in a host's history (dashboard / reports list). */
+export interface GameSummary {
+  id: string;
+  quizTitle: string;
+  pin: string;
+  questionCount: number;
+  playerCount: number;
+  winnerNickname: string | null;
+  startedAt: string;
+  endedAt: string;
+}
+
 export interface GameError {
   message: string;
 }

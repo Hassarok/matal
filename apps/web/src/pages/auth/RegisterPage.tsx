@@ -31,7 +31,7 @@ export function RegisterPage() {
     setFormError(null);
     try {
       await registerMutation.mutateAsync(values);
-      navigate('/profile', { replace: true });
+      navigate('/dashboard', { replace: true });
     } catch (error) {
       setFormError(applyApiError(error, setError));
     }

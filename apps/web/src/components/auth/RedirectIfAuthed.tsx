@@ -8,6 +8,6 @@ export function RedirectIfAuthed({ children }: { children: ReactNode }) {
   const { user, isLoading } = useAuth();
 
   if (isLoading) return <FullPageLoader />;
-  if (user) return <Navigate to="/profile" replace />;
+  if (user) return <Navigate to="/dashboard" replace />;
   return <>{children}</>;
 }

@@ -3,13 +3,16 @@ import { Injectable, Logger } from '@nestjs/common';
 import {
   GamePhase,
   type AnswerSubmission,
+  type GameSummary,
   type LobbyState,
+  type Paginated,
   type PlayerResult,
   type QuestionContent,
   type QuestionType,
   type QuestionReveal,
   type GamePodium,
 } from '@matal/shared-types';
+import type { PaginationQuery } from '@matal/validation';
 import { PrismaService } from '../../database/prisma.service';
 import { randomToken } from '../../common/hash.util';
 import { GameStateStore } from './game-state.store';
@@ -276,6 +279,44 @@ export class GamesService {
       return session;
     }
     return null;
+  }
+
+  // ── History (persisted, completed games) ──────────────────────────
+
+  /** Paginated list of completed games hosted by a user, newest first. */
+  async history(hostId: string, query: PaginationQuery): Promise<Paginated<GameSummary>> {
+    const where = { hostId };
+    const [total, rows] = await this.prisma.$transaction([
+      this.prisma.game.count({ where }),
+      this.prisma.game.findMany({
+        where,
+        orderBy: { endedAt: 'desc' },
+        skip: (query.page - 1) * query.pageSize,
+        take: query.pageSize,
+        include: {
+          players: { orderBy: { rank: 'asc' }, take: 1, select: { nickname: true } },
+        },
+      }),
+    ]);
+
+    return {
+      items: rows.map((game) => ({
+        id: game.id,
+        quizTitle: game.quizTitle,
+        pin: game.pin,
+        questionCount: game.questionCount,
+        playerCount: game.playerCount,
+        winnerNickname: game.players[0]?.nickname ?? null,
+        startedAt: game.startedAt.toISOString(),
+        endedAt: game.endedAt.toISOString(),
+      })),
+      meta: {
+        page: query.page,
+        pageSize: query.pageSize,
+        total,
+        totalPages: Math.max(1, Math.ceil(total / query.pageSize)),
+      },
+    };
   }
 
   // ── Helpers ───────────────────────────────────────────────────────

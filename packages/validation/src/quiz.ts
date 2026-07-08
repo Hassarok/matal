@@ -104,6 +104,10 @@ export const saveQuizSchema = quizMetaSchema.extend({
 });
 export type SaveQuizInput = z.infer<typeof saveQuizSchema>;
 
+/** How a quiz list is ordered. */
+export const quizSortOptions = ['recent', 'oldest', 'title'] as const;
+export type QuizSort = (typeof quizSortOptions)[number];
+
 /** Query params for listing/searching the current user's quizzes. */
 export const quizListQuerySchema = z.object({
   page: z.coerce.number().int().min(1).default(1),
@@ -111,5 +115,6 @@ export const quizListQuerySchema = z.object({
   search: z.string().trim().max(100).optional(),
   categoryId: z.string().optional(),
   difficulty: z.nativeEnum(Difficulty).optional(),
+  sort: z.enum(quizSortOptions).default('recent'),
 });
 export type QuizListQuery = z.infer<typeof quizListQuerySchema>;

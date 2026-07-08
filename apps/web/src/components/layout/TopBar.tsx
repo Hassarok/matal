@@ -1,5 +1,5 @@
 import { Link, useNavigate } from 'react-router-dom';
-import { LibraryBig, LogOut, User as UserIcon } from 'lucide-react';
+import { LayoutDashboard, LibraryBig, LogOut, User as UserIcon } from 'lucide-react';
 import { Logo } from '@/components/brand/Logo';
 import { ThemeToggle } from '@/components/ThemeToggle';
 import { LanguageSwitcher } from '@/components/LanguageSwitcher';
@@ -51,6 +51,11 @@ function UserMenu() {
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end">
         <DropdownMenuLabel>{user.displayName}</DropdownMenuLabel>
+        <DropdownMenuItem asChild>
+          <Link to="/dashboard">
+            <LayoutDashboard /> Dashboard
+          </Link>
+        </DropdownMenuItem>
         <DropdownMenuItem asChild>
           <Link to="/quizzes">
             <LibraryBig /> My quizzes

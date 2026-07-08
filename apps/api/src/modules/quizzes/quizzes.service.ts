@@ -67,12 +67,19 @@ export class QuizzesService {
         : {}),
     };
 
+    const orderBy: Prisma.QuizOrderByWithRelationInput =
+      query.sort === 'title'
+        ? { title: 'asc' }
+        : query.sort === 'oldest'
+          ? { createdAt: 'asc' }
+          : { updatedAt: 'desc' };
+
     const [total, rows] = await this.prisma.$transaction([
       this.prisma.quiz.count({ where }),
       this.prisma.quiz.findMany({
         where,
         include: LIST_INCLUDE,
-        orderBy: { updatedAt: 'desc' },
+        orderBy,
         skip: (query.page - 1) * query.pageSize,
         take: query.pageSize,
       }),
