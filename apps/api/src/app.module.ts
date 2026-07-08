@@ -14,6 +14,7 @@ import { UsersModule } from './modules/users/users.module';
 import { AuthModule } from './modules/auth/auth.module';
 import { CategoriesModule } from './modules/categories/categories.module';
 import { QuizzesModule } from './modules/quizzes/quizzes.module';
+import { GamesModule } from './modules/games/games.module';
 
 /**
  * Application composition root.
@@ -44,6 +45,7 @@ import { QuizzesModule } from './modules/quizzes/quizzes.module';
     AuthModule,
     CategoriesModule,
     QuizzesModule,
+    GamesModule,
   ],
   providers: [{ provide: APP_GUARD, useClass: ThrottlerGuard }],
 })

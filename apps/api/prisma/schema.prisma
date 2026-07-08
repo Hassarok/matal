@@ -50,6 +50,7 @@ model User {
   refreshTokens RefreshToken[]
   tokens        Token[]
   quizzes       Quiz[]
+  hostedGames   Game[]
 
   @@index([organizationId])
   @@map("users")
@@ -137,6 +138,7 @@ model Quiz {
   category   Category? @relation(fields: [categoryId], references: [id], onDelete: SetNull)
 
   questions Question[]
+  games     Game[]
 
   createdAt DateTime @default(now()) @map("created_at")
   updatedAt DateTime @updatedAt @map("updated_at")
@@ -168,4 +170,57 @@ model Question {
 
   @@index([quizId])
   @@map("questions")
+}
+
+// ─── Phase 5: Live games (end-of-game persistence for reports) ────────
+
+/// A completed hosted game session. Written when a game ends; feeds reports.
+model Game {
+  id            String   @id @default(cuid())
+  pin           String
+  quizId        String?  @map("quiz_id")
+  quiz          Quiz?    @relation(fields: [quizId], references: [id], onDelete: SetNull)
+  hostId        String   @map("host_id")
+  host          User     @relation(fields: [hostId], references: [id], onDelete: Cascade)
+  quizTitle     String   @map("quiz_title")
+  questionCount Int      @map("question_count")
+  playerCount   Int      @map("player_count")
+  startedAt     DateTime @map("started_at")
+  endedAt       DateTime @default(now()) @map("ended_at")
+
+  players   GamePlayer[]
+  responses GameResponse[]
+
+  @@index([hostId])
+  @@index([quizId])
+  @@map("games")
+}
+
+/// A player's final standing in a completed game.
+model GamePlayer {
+  id           String @id @default(cuid())
+  gameId       String @map("game_id")
+  game         Game   @relation(fields: [gameId], references: [id], onDelete: Cascade)
+  nickname     String
+  score        Int
+  rank         Int
+  correctCount Int    @map("correct_count")
+
+  @@index([gameId])
+  @@map("game_players")
+}
+
+/// A single answer within a completed game (for per-question analysis).
+model GameResponse {
+  id            String  @id @default(cuid())
+  gameId        String  @map("game_id")
+  game          Game    @relation(fields: [gameId], references: [id], onDelete: Cascade)
+  questionIndex Int     @map("question_index")
+  nickname      String
+  correct       Boolean
+  points        Int
+  responseMs    Int     @map("response_ms")
+
+  @@index([gameId, questionIndex])
+  @@map("game_responses")
 }

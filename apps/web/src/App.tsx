@@ -6,6 +6,9 @@ import { RegisterPage } from './pages/auth/RegisterPage';
 import { ProfilePage } from './pages/ProfilePage';
 import { MyQuizzesPage } from './pages/quizzes/MyQuizzesPage';
 import { QuizBuilderPage } from './pages/quizzes/QuizBuilderPage';
+import { JoinGamePage } from './pages/game/JoinGamePage';
+import { PlayGamePage } from './pages/game/PlayGamePage';
+import { HostGamePage } from './pages/game/HostGamePage';
 import { RequireAuth } from './components/auth/RequireAuth';
 import { RedirectIfAuthed } from './components/auth/RedirectIfAuthed';
 
@@ -15,6 +18,10 @@ export default function App() {
     <Routes>
       <Route path="/" element={<LandingPage />} />
       <Route path="/style-guide" element={<StyleGuidePage />} />
+
+      {/* Public live-game entry (players need no account) */}
+      <Route path="/join" element={<JoinGamePage />} />
+      <Route path="/play/:pin" element={<PlayGamePage />} />
 
       <Route
         path="/login"
@@ -39,6 +46,7 @@ export default function App() {
         <Route path="/quizzes" element={<MyQuizzesPage />} />
         <Route path="/quizzes/new" element={<QuizBuilderPage />} />
         <Route path="/quizzes/:id/edit" element={<QuizBuilderPage />} />
+        <Route path="/host/:quizId" element={<HostGamePage />} />
       </Route>
 
       <Route path="*" element={<Navigate to="/" replace />} />

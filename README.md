@@ -24,8 +24,9 @@ The interface has its own visual identity, subtly inspired by Kurdish heritage
 (mountain and earth tones, golden sunlight, kilim geometry) blended with modern
 product design — with light/dark modes and RTL-ready localization.
 
-> **Status:** Phases 1–4 complete (Foundation + Design System + Auth + Quiz
-> Builder). See the [Roadmap](#roadmap). Explore the components at `/style-guide`.
+> **Status:** Phases 1–5 complete (Foundation + Design System + Auth + Quiz
+> Builder + Live Game Engine). See the [Roadmap](#roadmap). Explore the
+> components at `/style-guide`.
 
 ## Tech Stack
 
@@ -218,13 +219,31 @@ toggles to preview every component in light/dark and LTR/RTL.
 - Media is referenced by **image URL** for now; a `StorageService` seam is in
   place so real uploads can be added later without refactoring.
 
+## Live Games
+
+- **Real-time host ↔ player flow** over Socket.IO (namespace `/game`): the host
+  creates a room from a quiz, players join with a 6-digit **PIN** and a nickname
+  (no account required), and everyone moves through lobby → question → reveal →
+  podium together.
+- **Server-authoritative** timing and scoring — the correct answer never leaves
+  the server for players; points are speed-weighted (fast correct answers score
+  higher), with streak tracking and a live leaderboard.
+- **All six question types** are playable, with a per-type answer UI (tiles,
+  true/false, multi-select, short answer, ordering) and a host answer key + live
+  answered-count.
+- **Reconnection** is built in: players get a grace period and re-sync to the
+  current question via a stored token; the host can rejoin an in-progress game.
+- Live state lives in an **in-memory store behind an interface** (swap in Redis
+  to scale across instances); only completed games are persisted to Postgres
+  (`games`, `game_players`, `game_responses`) to feed reports & analytics.
+
 ## Roadmap
 
 1. **Foundation & Project Setup** ✅
 2. **Design System** ✅
 3. **Authentication & User Management** ✅
 4. **Quiz Builder** ✅
-5. Live Game Engine
+5. **Live Game Engine** ✅
 6. Dashboard & Search
 7. Reports & Analytics
 8. Admin Panel

@@ -6,6 +6,7 @@ import {
   FileQuestion,
   MoreVertical,
   Pencil,
+  Play,
   Plus,
   Search,
   Trash2,
@@ -21,6 +22,7 @@ import {
   Card,
   CardContent,
   CardDescription,
+  CardFooter,
   CardHeader,
   CardTitle,
 } from '@/components/ui/card';
@@ -111,6 +113,25 @@ function QuizCard({
         </Badge>
         {quiz.category && <Badge variant="outline">{quiz.category.name}</Badge>}
       </CardContent>
+      <CardFooter>
+        <Button
+          asChild={quiz.questionCount > 0}
+          variant="gradient"
+          className="w-full"
+          disabled={quiz.questionCount === 0}
+          title={quiz.questionCount === 0 ? 'Add a question before hosting' : undefined}
+        >
+          {quiz.questionCount > 0 ? (
+            <Link to={`/host/${quiz.id}`}>
+              <Play /> Host live
+            </Link>
+          ) : (
+            <span>
+              <Play /> Host live
+            </span>
+          )}
+        </Button>
+      </CardFooter>
     </Card>
   );
 }

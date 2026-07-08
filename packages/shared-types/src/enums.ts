@@ -50,6 +50,14 @@ export enum GameStatus {
   Ended = 'ENDED',
 }
 
+/** Fine-grained phase of a live game, used to drive the client UI. */
+export enum GamePhase {
+  Lobby = 'LOBBY',
+  Question = 'QUESTION',
+  Reveal = 'REVEAL',
+  Ended = 'ENDED',
+}
+
 /** Supported interface languages (localization / RTL readiness). */
 export enum Locale {
   English = 'en',

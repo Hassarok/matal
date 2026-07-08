@@ -15,9 +15,11 @@ export {
   Difficulty,
   QuizVisibility,
   GameStatus,
+  GamePhase,
   Locale,
   TextDirection,
 } from './enums';
+export { GameEvents } from './game';
 
 // Type-only contracts (erased at runtime)
 export type {
@@ -39,3 +41,18 @@ export type {
   QuizListItem,
   QuizDetail,
 } from './quiz';
+export type {
+  LobbyPlayer,
+  LobbyState,
+  PlayerQuestionView,
+  HostQuestionView,
+  AnswerSubmission,
+  PlayerResult,
+  LeaderboardEntry,
+  AnswerDistribution,
+  QuestionReveal,
+  GamePodium,
+  GameError,
+  GameCreated,
+  PlayerJoined,
+} from './game';
