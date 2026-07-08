@@ -24,8 +24,9 @@ The interface has its own visual identity, subtly inspired by Kurdish heritage
 (mountain and earth tones, golden sunlight, kilim geometry) blended with modern
 product design — with light/dark modes and RTL-ready localization.
 
-> **Status:** Phases 1–9 complete (through Performance, Security & Testing).
-> See the [Roadmap](#roadmap). Explore the components at `/style-guide`.
+> **Status:** ✅ All 10 roadmap phases complete. Production deployment is
+> documented in **[DEPLOYMENT.md](DEPLOYMENT.md)**; explore the component
+> gallery at `/style-guide`.
 
 ## Tech Stack
 
@@ -288,6 +289,21 @@ toggles to preview every component in light/dark and LTR/RTL.
   aggregation and admin self-guards/mapping (API), plus game-UI component tests
   (answer input, leaderboard) on the web. **71 tests** across both apps.
 
+## Deployment
+
+MATAL ships as two container images — the **API** and the **web** app (nginx
+serving the SPA and reverse-proxying the API + websockets) — plus PostgreSQL.
+The bundled `docker-compose.prod.yml` runs the whole stack:
+
+```bash
+cp .env.production.example .env   # set strong secrets + your URLs
+docker compose -f docker-compose.prod.yml up -d --build
+```
+
+Database migrations apply automatically on API startup. See
+**[DEPLOYMENT.md](DEPLOYMENT.md)** for configuration, TLS, seeding, health
+checks, backups, and separate-hosting options.
+
 ## Roadmap
 
 1. **Foundation & Project Setup** ✅
@@ -299,7 +315,10 @@ toggles to preview every component in light/dark and LTR/RTL.
 7. **Reports & Analytics** ✅
 8. **Admin Panel** ✅
 9. **Performance, Security & Testing** ✅
-10. Deployment & Documentation
+10. **Deployment & Documentation** ✅
+
+_All phases delivered — MATAL is feature-complete against the original
+roadmap._
 
 ## License
 

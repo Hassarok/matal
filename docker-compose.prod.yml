@@ -1,0 +1,64 @@
+# MATAL — production stack: Postgres + API + web (nginx).
+# Usage:
+#   cp .env.production.example .env      # then edit secrets/URLs
+#   docker compose -f docker-compose.prod.yml up -d --build
+#
+# The web container serves the SPA on :8080 and proxies /api and /socket.io to
+# the API, so the whole app is reachable from a single origin. Put a TLS
+# terminator (Caddy / nginx / a cloud LB) in front for HTTPS in real use.
+
+services:
+  postgres:
+    image: postgres:16-alpine
+    container_name: matal-postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-matal}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-matal_dev_password}
+      POSTGRES_DB: ${POSTGRES_DB:-matal}
+    volumes:
+      - matal-postgres-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ['CMD-SHELL', 'pg_isready -U ${POSTGRES_USER:-matal} -d ${POSTGRES_DB:-matal}']
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  api:
+    build:
+      context: .
+      dockerfile: apps/api/Dockerfile
+    container_name: matal-api
+    restart: unless-stopped
+    env_file: .env
+    environment:
+      NODE_ENV: production
+    depends_on:
+      postgres:
+        condition: service_healthy
+    healthcheck:
+      test:
+        - CMD
+        - node
+        - -e
+        - "fetch('http://localhost:3000/api/v1/health').then(r=>process.exit(r.ok?0:1)).catch(()=>process.exit(1))"
+      interval: 30s
+      timeout: 5s
+      retries: 5
+
+  web:
+    build:
+      context: .
+      dockerfile: apps/web/Dockerfile
+      args:
+        # Empty → same-origin; the web nginx proxies /api and /socket.io.
+        VITE_API_URL: ${VITE_API_URL:-}
+    container_name: matal-web
+    restart: unless-stopped
+    ports:
+      - '${WEB_PORT:-8080}:80'
+    depends_on:
+      - api
+
+volumes:
+  matal-postgres-data:
