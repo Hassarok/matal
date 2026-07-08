@@ -24,9 +24,9 @@ The interface has its own visual identity, subtly inspired by Kurdish heritage
 (mountain and earth tones, golden sunlight, kilim geometry) blended with modern
 product design — with light/dark modes and RTL-ready localization.
 
-> **Status:** Phases 1–6 complete (Foundation + Design System + Auth + Quiz
-> Builder + Live Game Engine + Dashboard & Search). See the
-> [Roadmap](#roadmap). Explore the components at `/style-guide`.
+> **Status:** Phases 1–7 complete (Foundation + Design System + Auth + Quiz
+> Builder + Live Game Engine + Dashboard & Search + Reports & Analytics). See
+> the [Roadmap](#roadmap). Explore the components at `/style-guide`.
 
 ## Tech Stack
 
@@ -250,6 +250,19 @@ toggles to preview every component in light/dark and LTR/RTL.
 - **Quiz preview** (`/quizzes/:id`) — a read-only view of a quiz and its full
   answer key, with one-click **Host** and **Edit** actions.
 
+## Reports & Analytics
+
+- **Per-game reports** (`/games/:id`, `GET /api/v1/games/:id/report`) — final
+  standings with each player's correct-answer count, plus a per-question
+  breakdown (correct rate and average response time) computed from the stored
+  `game_responses`.
+- **Cross-game analytics** (`GET /api/v1/games/analytics`) — games hosted,
+  players engaged, questions played, average players per game, and a
+  most-played-quizzes leaderboard.
+- **Reports home** (`/reports`) — analytics at a glance over the full,
+  paginated list of completed games, each linking to its detailed report.
+  Recent games on the dashboard link straight through.
+
 ## Roadmap
 
 1. **Foundation & Project Setup** ✅
@@ -258,7 +271,7 @@ toggles to preview every component in light/dark and LTR/RTL.
 4. **Quiz Builder** ✅
 5. **Live Game Engine** ✅
 6. **Dashboard & Search** ✅
-7. Reports & Analytics
+7. **Reports & Analytics** ✅
 8. Admin Panel
 9. Performance, Security & Testing
 10. Deployment & Documentation

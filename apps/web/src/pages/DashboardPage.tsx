@@ -64,7 +64,10 @@ function RecentQuiz({ quiz }: { quiz: QuizListItem }) {
 
 function RecentGame({ game }: { game: GameSummary }) {
   return (
-    <div className="flex items-center justify-between gap-3 rounded-lg border border-border bg-surface px-4 py-3">
+    <Link
+      to={`/games/${game.id}`}
+      className="flex items-center justify-between gap-3 rounded-lg border border-border bg-surface px-4 py-3 transition-colors hover:bg-surface-muted"
+    >
       <span className="min-w-0">
         <span className="block truncate font-medium">{game.quizTitle}</span>
         <span className="flex items-center gap-3 text-xs text-muted-foreground">
@@ -81,7 +84,7 @@ function RecentGame({ game }: { game: GameSummary }) {
       <span className="shrink-0 text-xs text-muted-foreground">
         {new Date(game.endedAt).toLocaleDateString()}
       </span>
-    </div>
+    </Link>
   );
 }
 
@@ -176,9 +179,14 @@ export function DashboardPage() {
 
             {/* Recent games */}
             <Card>
-              <CardHeader>
-                <CardTitle className="text-base">Recent games</CardTitle>
-                <CardDescription>Games you&apos;ve hosted</CardDescription>
+              <CardHeader className="flex-row items-center justify-between">
+                <div className="grid gap-1">
+                  <CardTitle className="text-base">Recent games</CardTitle>
+                  <CardDescription>Games you&apos;ve hosted</CardDescription>
+                </div>
+                <Button asChild variant="ghost" size="sm">
+                  <Link to="/reports">View all</Link>
+                </Button>
               </CardHeader>
               <CardContent className="grid gap-2">
                 {gamesQuery.isLoading ? (

@@ -1,9 +1,14 @@
-import { Controller, Get, Query, UseGuards } from '@nestjs/common';
+import { Controller, Get, Param, Query, UseGuards } from '@nestjs/common';
 import {
   paginationQuerySchema,
   type PaginationQuery,
 } from '@matal/validation';
-import type { GameSummary, Paginated } from '@matal/shared-types';
+import type {
+  GameReport,
+  GameSummary,
+  HostAnalytics,
+  Paginated,
+} from '@matal/shared-types';
 import { ZodValidationPipe } from '../../common/pipes/zod-validation.pipe';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { CurrentUser } from '../auth/decorators/current-user.decorator';
@@ -26,5 +31,18 @@ export class GamesController {
     @Query(new ZodValidationPipe(paginationQuerySchema)) query: PaginationQuery,
   ): Promise<Paginated<GameSummary>> {
     return this.gamesService.history(user.id, query);
+  }
+
+  @Get('analytics')
+  analytics(@CurrentUser() user: AuthenticatedUser): Promise<HostAnalytics> {
+    return this.gamesService.analytics(user.id);
+  }
+
+  @Get(':id/report')
+  report(
+    @CurrentUser() user: AuthenticatedUser,
+    @Param('id') id: string,
+  ): Promise<GameReport> {
+    return this.gamesService.report(user.id, id);
   }
 }

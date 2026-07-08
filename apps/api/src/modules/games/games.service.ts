@@ -1,13 +1,16 @@
 import { randomUUID } from 'node:crypto';
-import { Injectable, Logger } from '@nestjs/common';
+import { Injectable, Logger, NotFoundException } from '@nestjs/common';
 import {
   GamePhase,
   type AnswerSubmission,
+  type GameReport,
   type GameSummary,
+  type HostAnalytics,
   type LobbyState,
   type Paginated,
   type PlayerResult,
   type QuestionContent,
+  type QuestionReport,
   type QuestionType,
   type QuestionReveal,
   type GamePodium,
@@ -316,6 +319,100 @@ export class GamesService {
         total,
         totalPages: Math.max(1, Math.ceil(total / query.pageSize)),
       },
+    };
+  }
+
+  /** Detailed post-game report (player standings + per-question breakdown). */
+  async report(hostId: string, gameId: string): Promise<GameReport> {
+    const game = await this.prisma.game.findFirst({
+      where: { id: gameId, hostId },
+      include: {
+        players: { orderBy: { rank: 'asc' } },
+        responses: true,
+      },
+    });
+    if (!game) throw new NotFoundException('Game not found.');
+
+    // Aggregate responses per question index.
+    const byIndex = new Map<number, { answers: number; correct: number; totalMs: number }>();
+    for (const r of game.responses) {
+      const bucket = byIndex.get(r.questionIndex) ?? { answers: 0, correct: 0, totalMs: 0 };
+      bucket.answers += 1;
+      if (r.correct) bucket.correct += 1;
+      bucket.totalMs += r.responseMs;
+      byIndex.set(r.questionIndex, bucket);
+    }
+
+    const questions: QuestionReport[] = Array.from(
+      { length: game.questionCount },
+      (_, questionIndex) => {
+        const b = byIndex.get(questionIndex);
+        const answerCount = b?.answers ?? 0;
+        const correctCount = b?.correct ?? 0;
+        return {
+          questionIndex,
+          answerCount,
+          correctCount,
+          correctRate: answerCount > 0 ? correctCount / answerCount : 0,
+          averageResponseMs: answerCount > 0 ? Math.round((b?.totalMs ?? 0) / answerCount) : 0,
+        };
+      },
+    );
+
+    const totalScore = game.players.reduce((sum, p) => sum + p.score, 0);
+
+    return {
+      id: game.id,
+      quizTitle: game.quizTitle,
+      pin: game.pin,
+      questionCount: game.questionCount,
+      playerCount: game.playerCount,
+      winnerNickname: game.players[0]?.nickname ?? null,
+      startedAt: game.startedAt.toISOString(),
+      endedAt: game.endedAt.toISOString(),
+      durationMs: Math.max(0, game.endedAt.getTime() - game.startedAt.getTime()),
+      averageScore: game.players.length > 0 ? Math.round(totalScore / game.players.length) : 0,
+      players: game.players.map((p) => ({
+        nickname: p.nickname,
+        rank: p.rank,
+        score: p.score,
+        correctCount: p.correctCount,
+      })),
+      questions,
+    };
+  }
+
+  /** Cross-game analytics for a host's account. */
+  async analytics(hostId: string): Promise<HostAnalytics> {
+    const where = { hostId };
+    const [totals, topQuizzes] = await Promise.all([
+      this.prisma.game.aggregate({
+        where,
+        _count: { _all: true },
+        _sum: { playerCount: true, questionCount: true },
+      }),
+      this.prisma.game.groupBy({
+        by: ['quizTitle'],
+        where,
+        _count: { quizTitle: true },
+        orderBy: { _count: { quizTitle: 'desc' } },
+        take: 5,
+      }),
+    ]);
+
+    const totalGames = totals._count._all;
+    const totalPlayers = totals._sum.playerCount ?? 0;
+    const totalQuestions = totals._sum.questionCount ?? 0;
+
+    return {
+      totalGames,
+      totalPlayers,
+      totalQuestions,
+      averagePlayersPerGame: totalGames > 0 ? Math.round(totalPlayers / totalGames) : 0,
+      topQuizzes: topQuizzes.map((q) => ({
+        quizTitle: q.quizTitle,
+        timesPlayed: q._count.quizTitle,
+      })),
     };
   }
 

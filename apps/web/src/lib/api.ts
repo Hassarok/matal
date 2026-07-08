@@ -1,8 +1,10 @@
 import type {
   ApiErrorCode,
   ApiResponse,
+  GameReport,
   GameSummary,
   HealthStatus,
+  HostAnalytics,
   MessageResponse,
   Paginated,
   PublicCategory,
@@ -189,5 +191,7 @@ export const api = {
       request<Paginated<GameSummary>>(
         `/games/history${buildQuery({ page: params.page, pageSize: params.pageSize })}`,
       ),
+    analytics: () => request<HostAnalytics>('/games/analytics'),
+    report: (id: string) => request<GameReport>(`/games/${id}/report`),
   },
 };

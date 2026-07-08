@@ -124,6 +124,42 @@ export interface GameSummary {
   endedAt: string;
 }
 
+/** A player's final standing within a game report. */
+export interface GameReportPlayer {
+  nickname: string;
+  rank: number;
+  score: number;
+  correctCount: number;
+}
+
+/** Aggregate stats for one question across all players in a game. */
+export interface QuestionReport {
+  questionIndex: number;
+  answerCount: number;
+  correctCount: number;
+  /** Share of answers that were correct, 0–1. */
+  correctRate: number;
+  averageResponseMs: number;
+}
+
+/** Full post-game report for a single completed game (host-only). */
+export interface GameReport extends GameSummary {
+  durationMs: number;
+  averageScore: number;
+  players: GameReportPlayer[];
+  questions: QuestionReport[];
+}
+
+/** Cross-game analytics for a host's account. */
+export interface HostAnalytics {
+  totalGames: number;
+  totalPlayers: number;
+  totalQuestions: number;
+  averagePlayersPerGame: number;
+  /** The host's most-played quizzes, most first. */
+  topQuizzes: { quizTitle: string; timesPlayed: number }[];
+}
+
 export interface GameError {
   message: string;
 }
