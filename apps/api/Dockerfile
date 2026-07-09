@@ -14,7 +14,14 @@ WORKDIR /app
 # (build shared packages) and the api postinstall (prisma generate), so the
 # shared CJS packages and Prisma client exist before we compile the API.
 COPY . .
-RUN npm ci && npm run build --workspace @matal/api
+# Install deps (skip postinstall so we control the build order ourselves),
+# then use `tsc --build` on the validation tsconfig — it follows the project
+# references chain and builds shared-types first, then validation.
+# Finally generate the Prisma client and compile the NestJS app.
+RUN npm ci --ignore-scripts && \
+    npx tsc --build packages/validation/tsconfig.json && \
+    npm run db:generate --workspace @matal/api && \
+    npm run build --workspace @matal/api
 
 # ── Runner ───────────────────────────────────────────────────────────
 FROM node:20-alpine AS runner

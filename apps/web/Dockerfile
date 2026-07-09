@@ -14,7 +14,9 @@ ARG VITE_API_URL=""
 ENV VITE_API_URL=$VITE_API_URL
 
 COPY . .
-RUN npm ci && npm run build --workspace @matal/web
+# Vite resolves @matal/shared-types and @matal/validation from their TypeScript
+# source (via alias in vite.config.ts), so no package dist build is needed here.
+RUN npm ci --ignore-scripts && npm run build --workspace @matal/web
 
 # ── Runner (static files via nginx) ──────────────────────────────────
 FROM nginx:1.27-alpine AS runner
