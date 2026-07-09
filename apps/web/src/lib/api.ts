@@ -150,6 +150,8 @@ export const api = {
     login: (input: LoginInput) =>
       post<SessionResponse>('/auth/login', input).then((r) => r.user),
     logout: () => post<MessageResponse>('/auth/logout'),
+    /** Ensures an anonymous guest session cookie exists (idempotent). */
+    guest: () => post<{ guestId: string }>('/auth/guest'),
     me: () => request<SessionResponse>('/auth/me').then((r) => r.user),
     verifyEmail: (token: string) =>
       post<MessageResponse>('/auth/verify-email', { token }),

@@ -43,6 +43,9 @@ export type {
 } from './quiz';
 export type { AdminStats, AdminUser, AdminQuizItem } from './admin';
 export type {
+  LiveQuestionInput,
+  LiveQuizInput,
+  HostCreatePayload,
   LobbyPlayer,
   LobbyState,
   PlayerQuestionView,

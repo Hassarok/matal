@@ -66,6 +66,14 @@ export default function App() {
         <Route path="/join" element={<JoinGamePage />} />
         <Route path="/play/:pin" element={<PlayGamePage />} />
 
+        {/* Guest-capable: quizzes live locally until the visitor signs in. */}
+        <Route path="/dashboard" element={<DashboardPage />} />
+        <Route path="/quizzes" element={<MyQuizzesPage />} />
+        <Route path="/quizzes/new" element={<QuizBuilderPage />} />
+        <Route path="/quizzes/:id" element={<QuizDetailPage />} />
+        <Route path="/quizzes/:id/edit" element={<QuizBuilderPage />} />
+        <Route path="/host/:quizId" element={<HostGamePage />} />
+
         <Route
           path="/login"
           element={
@@ -83,15 +91,9 @@ export default function App() {
           }
         />
 
-        {/* Authenticated routes */}
+        {/* Account-only routes (genuinely require signing in) */}
         <Route element={<RequireAuth />}>
-          <Route path="/dashboard" element={<DashboardPage />} />
           <Route path="/profile" element={<ProfilePage />} />
-          <Route path="/quizzes" element={<MyQuizzesPage />} />
-          <Route path="/quizzes/new" element={<QuizBuilderPage />} />
-          <Route path="/quizzes/:id" element={<QuizDetailPage />} />
-          <Route path="/quizzes/:id/edit" element={<QuizBuilderPage />} />
-          <Route path="/host/:quizId" element={<HostGamePage />} />
           <Route path="/reports" element={<ReportsPage />} />
           <Route path="/games/:id" element={<GameReportPage />} />
         </Route>

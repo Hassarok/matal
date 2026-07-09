@@ -54,7 +54,10 @@ export interface ActiveQuestion {
 export interface GameSession {
   id: string;
   pin: string;
+  /** Stable host identity (real user id or guest id) for host-only checks. */
   hostId: string;
+  /** Real user id when a signed-in user hosts; null for guests (no persistence). */
+  hostUserId: string | null;
   hostSocketId: string | null;
   quizId: string | null;
   quizTitle: string;

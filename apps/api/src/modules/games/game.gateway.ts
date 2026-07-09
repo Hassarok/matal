@@ -13,9 +13,16 @@ import {
   GameEvents,
   GamePhase,
   type AnswerSubmission,
+  type HostCreatePayload,
   type PlayerResult,
 } from '@matal/shared-types';
-import { ACCESS_COOKIE, type JwtPayload } from '../auth/auth.types';
+import { liveQuizSchema } from '@matal/validation';
+import {
+  ACCESS_COOKIE,
+  GUEST_COOKIE,
+  type GuestJwtPayload,
+  type JwtPayload,
+} from '../auth/auth.types';
 import { GameActionError, GamesService } from './games.service';
 import type { GameSession } from './game.types';
 import { toHostQuestion, toPlayerQuestion } from './scoring';
@@ -73,11 +80,15 @@ export class GameGateway implements OnGatewayDisconnect {
   @SubscribeMessage(GameEvents.HostCreate)
   handleHostCreate(
     @ConnectedSocket() client: Socket,
-    @MessageBody() data: { quizId: string },
+    @MessageBody() data: HostCreatePayload,
   ) {
     return this.safe(client, async () => {
-      const hostId = await this.authHost(client);
-      const session = await this.games.createGame(hostId, data.quizId, client.id);
+      const host = await this.authHost(client);
+      const parsed = liveQuizSchema.safeParse(data?.quiz);
+      if (!parsed.success) {
+        throw new GameActionError('This quiz can’t be hosted. Please check its questions.');
+      }
+      const session = await this.games.createGame(host, parsed.data, client.id);
       client.join(this.room(session.id));
       client.emit(GameEvents.GameCreated, {
         gameId: session.id,
@@ -93,7 +104,7 @@ export class GameGateway implements OnGatewayDisconnect {
     @MessageBody() data: { gameId: string },
   ) {
     return this.safe(client, async () => {
-      const hostId = await this.authHost(client);
+      const { id: hostId } = await this.authHost(client);
       const session = this.games.attachHost(data.gameId, hostId, client.id);
       client.join(this.room(session.id));
       client.emit(GameEvents.LobbyUpdate, this.games.toLobbyState(session));
@@ -107,7 +118,7 @@ export class GameGateway implements OnGatewayDisconnect {
     @MessageBody() data: { gameId: string },
   ) {
     return this.safe(client, async () => {
-      const hostId = await this.authHost(client);
+      const { id: hostId } = await this.authHost(client);
       const session = this.games.startGame(data.gameId, hostId);
       this.runQuestion(session);
     });
@@ -119,7 +130,7 @@ export class GameGateway implements OnGatewayDisconnect {
     @MessageBody() data: { gameId: string },
   ) {
     return this.safe(client, async () => {
-      const hostId = await this.authHost(client);
+      const { id: hostId } = await this.authHost(client);
       const session = this.games.getSession(data.gameId);
       if (!session || session.hostId !== hostId) throw new GameActionError('Game not found.');
       this.reveal(session);
@@ -132,7 +143,7 @@ export class GameGateway implements OnGatewayDisconnect {
     @MessageBody() data: { gameId: string },
   ) {
     return this.safe(client, async () => {
-      const hostId = await this.authHost(client);
+      const { id: hostId } = await this.authHost(client);
       const next = this.games.advance(data.gameId, hostId);
       if (!next) {
         await this.endGame(data.gameId, hostId);
@@ -148,7 +159,7 @@ export class GameGateway implements OnGatewayDisconnect {
     @MessageBody() data: { gameId: string },
   ) {
     return this.safe(client, async () => {
-      const hostId = await this.authHost(client);
+      const { id: hostId } = await this.authHost(client);
       await this.endGame(data.gameId, hostId);
     });
   }
@@ -358,16 +369,37 @@ export class GameGateway implements OnGatewayDisconnect {
     return `game:${gameId}`;
   }
 
-  private async authHost(client: Socket): Promise<string> {
+  /**
+   * Resolves the host's identity from the handshake cookies. A signed-in user
+   * (access cookie) hosts as themselves; otherwise a guest cookie provides a
+   * stable anonymous identity. Guest games are played but not persisted.
+   */
+  private async authHost(client: Socket): Promise<{ id: string; isGuest: boolean }> {
     const cookies = parseCookies(client.handshake.headers.cookie);
-    const token = cookies[ACCESS_COOKIE];
-    if (!token) throw new GameActionError('You must be signed in to host a game.');
-    try {
-      const payload = await this.jwt.verifyAsync<JwtPayload>(token);
-      return payload.sub;
-    } catch {
-      throw new GameActionError('Your session has expired. Please sign in again.');
+
+    const access = cookies[ACCESS_COOKIE];
+    if (access) {
+      try {
+        const payload = await this.jwt.verifyAsync<JwtPayload>(access);
+        if (!('guest' in payload)) return { id: payload.sub, isGuest: false };
+      } catch {
+        // Fall through to the guest cookie.
+      }
     }
+
+    const guest = cookies[GUEST_COOKIE];
+    if (guest) {
+      try {
+        const payload = await this.jwt.verifyAsync<GuestJwtPayload>(guest);
+        if (payload.guest && payload.sub) return { id: payload.sub, isGuest: true };
+      } catch {
+        // Fall through to the error below.
+      }
+    }
+
+    throw new GameActionError(
+      'We could not start your game. Please refresh the page and try again.',
+    );
   }
 
   private async safe(client: Socket, work: () => Promise<void>): Promise<void> {

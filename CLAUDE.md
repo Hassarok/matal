@@ -56,7 +56,9 @@ Single test:
 
 - **Routing:** global prefix `/api` + URI versioning → routes live at `/api/v1/...`. Controllers declare `@Controller({ path: '...', version: '1' })`.
 - **Response envelope:** all successful HTTP responses are wrapped as `{ success: true, data }` by `ResponseInterceptor`; errors as a structured envelope by `AllExceptionsFilter`. WebSocket messages pass through untouched. The web `lib/api.ts` unwraps this and does silent token refresh on 401.
-- **Auth:** JWT access/refresh with rotating refresh tokens stored hashed (one row per session, single-use). Delivered via httpOnly cookies (`ACCESS_COOKIE`). Guards: `JwtAuthGuard`, `RolesGuard` + `@Roles()`; `@CurrentUser()` decorator injects the authenticated user. Roles are `{ USER, ADMIN }`.
+- **Auth is optional.** The core experience (create/edit/preview quizzes, host, join, play) works for anonymous **guests**; signing in is an enhancement that unlocks permanent storage, sync, personal dashboard/history, saved reports, and profile. `JwtAuthGuard` stays real-users-only, so account-only REST routes still 401 guests.
+- **Guest sessions:** `POST /auth/guest` mints a signed guest token `{ sub, guest: true }` into a long-lived httpOnly `GUEST_COOKIE` (no DB row). Only the live-game gateway consumes it (stable host identity across reconnects); it is cleared on login/register, when the web client migrates any local quizzes into the new account.
+- **Auth tokens:** JWT access/refresh with rotating refresh tokens stored hashed (one row per session, single-use). Delivered via httpOnly cookies (`ACCESS_COOKIE`). Guards: `JwtAuthGuard`, `RolesGuard` + `@Roles()`; `@CurrentUser()` decorator injects the authenticated user. Roles are `{ USER, ADMIN }`.
 - **Feature modules** (`src/modules/*`) follow Clean Architecture: controllers/gateways → services → Prisma. Cross-cutting infra modules (config, prisma, security, email, storage, ai) are imported once in `app.module.ts`. Global rate limiting via `ThrottlerModule` (100 req/min/IP; auth routes tighten with `@Throttle`).
 - **Seams for later scale:** the AI provider (`modules/ai`), storage, and email are behind interfaces with simple default implementations (e.g. `ConsoleEmailService`). Follow this pattern — interface at the seam, simple impl behind it — rather than over-engineering.
 
@@ -64,7 +66,9 @@ Single test:
 
 Server-authoritative Kahoot-style flow (lobby → question → reveal → podium) over Socket.IO on namespace `/game`. `GameGateway` owns sockets, rooms, timers, and broadcasting; `GamesService` owns game state; scoring/timing are server-side (`scoring.ts`). Reconnection has a 30s grace period. Event names and payload types are shared in `@matal/shared-types` (`game.ts`, `GameEvents`).
 
-Live game state lives behind the `GameStateStore` abstract class with a default `InMemoryGameStateStore` — swappable for a Redis-backed store for multi-instance scale **without touching the engine**. Only completed games are persisted to Postgres (`Game`, `GamePlayer`, `GameResponse`) to feed reports; anonymous players (nickname only) are never stored as `User`s.
+Hosting is **snapshot-based**: the host sends the whole quiz (`HostCreate { quiz: LiveQuizInput }`, validated by `liveQuizSchema`) so guests (whose quizzes live only in the browser) and signed-in users share one path — the engine never reads a quiz from the DB to play. `authHost` accepts an access **or** guest cookie.
+
+Live game state lives behind the `GameStateStore` abstract class with a default `InMemoryGameStateStore` — swappable for a Redis-backed store for multi-instance scale **without touching the engine**. Only completed games hosted by a **signed-in** user are persisted to Postgres (`Game`, `GamePlayer`, `GameResponse`) to feed reports (`session.hostUserId`); guest-hosted games and anonymous players (nickname only) are never stored.
 
 Web side: `hooks/useHostGame.ts` and `hooks/usePlayerGame.ts` drive the two roles over `lib/gameSocket.ts`.
 
@@ -74,7 +78,9 @@ Postgres. Table/column names are **snake_case** (`@map`); the generated client s
 
 ## Web architecture
 
-React 18 + Vite + React Router 7. TanStack Query for server state (`lib/queryClient.ts`), react-hook-form + Zod resolvers for forms. UI is **shadcn/ui (Radix-based) re-skinned to MATAL design tokens** in `components/ui`; brand components in `components/brand`. i18n via i18next with four locales (`en`, `ar`, `ckb`, `kmr` — includes RTL). `@/` aliases `src/`. Auth-gated routes wrap in `<RequireAuth>`; `<RedirectIfAuthed>` guards login/register.
+React 18 + Vite + React Router 7. TanStack Query for server state (`lib/queryClient.ts`), react-hook-form + Zod resolvers for forms. UI is **shadcn/ui (Radix-based) re-skinned to MATAL design tokens** in `components/ui`; brand components in `components/brand`. i18n via i18next with four locales (`en`, `ar`, `ckb`, `kmr` — includes RTL). `@/` aliases `src/`. Only genuinely account-only routes (`/profile`, `/reports`, `/games/:id`, `/admin`) wrap in `<RequireAuth>`; quiz/host/dashboard routes are guest-accessible. `<RedirectIfAuthed>` guards login/register.
+
+**Guest vs. signed-in quizzes share one workflow** via the `QuizRepository` seam (`lib/quizStore.ts`): `useQuizRepository()` returns the API-backed store for signed-in users or a `localStorage` store for guests, so builder/my-quizzes/detail/dashboard pages are identical for both. On login/register, `migrateGuestQuizzesToAccount()` uploads any local quizzes to the new account.
 
 ## Git workflow
 

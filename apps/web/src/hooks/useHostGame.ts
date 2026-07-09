@@ -5,6 +5,7 @@ import {
   type GameCreated,
   type GamePodium,
   type HostQuestionView,
+  type LiveQuizInput,
   type LobbyState,
   type QuestionReveal,
 } from '@matal/shared-types';
@@ -31,8 +32,13 @@ export interface HostGameControls extends HostGameState {
   end: () => void;
 }
 
-/** Drives a hosted live game over a dedicated socket. */
-export function useHostGame(quizId: string): HostGameControls {
+/**
+ * Drives a hosted live game over a dedicated socket. The quiz is sent as a
+ * snapshot so both guests (local quizzes) and signed-in users host the same
+ * way. Pass `null` while the quiz is still loading — the socket connects once a
+ * snapshot is available.
+ */
+export function useHostGame(quiz: LiveQuizInput | null): HostGameControls {
   const socketRef = useRef<Socket | null>(null);
   const gameIdRef = useRef<string | null>(null);
 
@@ -54,6 +60,9 @@ export function useHostGame(quizId: string): HostGameControls {
   );
 
   useEffect(() => {
+    // Wait for the quiz snapshot before opening the socket.
+    if (!quiz) return;
+
     const socket = createGameSocket();
     socketRef.current = socket;
 
@@ -62,7 +71,7 @@ export function useHostGame(quizId: string): HostGameControls {
       if (gameIdRef.current) {
         socket.emit(GameEvents.HostRejoin, { gameId: gameIdRef.current });
       } else {
-        socket.emit(GameEvents.HostCreate, { quizId });
+        socket.emit(GameEvents.HostCreate, { quiz });
       }
     });
     socket.on('disconnect', () => patch({ connected: false }));
@@ -100,7 +109,7 @@ export function useHostGame(quizId: string): HostGameControls {
       socket.disconnect();
       socketRef.current = null;
     };
-  }, [quizId, patch]);
+  }, [quiz, patch]);
 
   const emitHost = useCallback((event: string) => {
     if (gameIdRef.current) socketRef.current?.emit(event, { gameId: gameIdRef.current });

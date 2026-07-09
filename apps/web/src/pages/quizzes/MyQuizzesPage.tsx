@@ -46,7 +46,7 @@ import {
 } from '@/components/ui/dialog';
 import { toast } from '@/components/ui/toaster';
 import { useCategories } from '@/hooks/useCategories';
-import { api } from '@/lib/api';
+import { useQuizRepository } from '@/hooks/useQuizRepository';
 
 const DIFFICULTY_BADGE: Record<Difficulty, 'success' | 'accent' | 'destructive'> = {
   [Difficulty.Easy]: 'success',
@@ -171,6 +171,7 @@ function QuizCardSkeleton() {
 export function MyQuizzesPage() {
   const queryClient = useQueryClient();
   const categoriesQuery = useCategories();
+  const repo = useQuizRepository();
 
   const [search, setSearch] = useState('');
   const [debouncedSearch, setDebouncedSearch] = useState('');
@@ -193,7 +194,7 @@ export function MyQuizzesPage() {
   const listQuery = useQuery({
     queryKey: ['quizzes', { search: debouncedSearch, categoryId, difficulty, sort, page }],
     queryFn: () =>
-      api.quizzes.list({
+      repo.list({
         search: debouncedSearch || undefined,
         categoryId: categoryId || undefined,
         difficulty: difficulty || undefined,
@@ -204,7 +205,7 @@ export function MyQuizzesPage() {
   });
 
   const duplicateMutation = useMutation({
-    mutationFn: api.quizzes.duplicate,
+    mutationFn: (quizId: string) => repo.duplicate(quizId),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['quizzes'] });
       toast.success('Quiz duplicated');
@@ -212,7 +213,7 @@ export function MyQuizzesPage() {
   });
 
   const deleteMutation = useMutation({
-    mutationFn: api.quizzes.remove,
+    mutationFn: (quizId: string) => repo.remove(quizId),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['quizzes'] });
       toast.success('Quiz deleted');

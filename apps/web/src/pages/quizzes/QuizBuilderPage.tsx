@@ -2,8 +2,8 @@ import { useEffect, useRef, useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { useNavigate, useParams } from 'react-router-dom';
-import { CircleAlert, Plus, X } from 'lucide-react';
+import { Link, useNavigate, useParams } from 'react-router-dom';
+import { CircleAlert, Info, Plus, X } from 'lucide-react';
 import {
   quizMetaSchema,
   saveQuizSchema,
@@ -37,7 +37,8 @@ import {
   type QuestionDraft,
 } from '@/components/quiz/question-draft';
 import { useCategories } from '@/hooks/useCategories';
-import { api } from '@/lib/api';
+import { useAuth } from '@/hooks/useAuth';
+import { useQuizRepository } from '@/hooks/useQuizRepository';
 import { applyApiError } from '@/lib/form-errors';
 
 const metaSchema = quizMetaSchema.omit({ tags: true, categoryId: true });
@@ -67,6 +68,8 @@ export function QuizBuilderPage() {
   const navigate = useNavigate();
   const queryClient = useQueryClient();
   const categoriesQuery = useCategories();
+  const repo = useQuizRepository();
+  const { isAuthenticated } = useAuth();
 
   const [drafts, setDrafts] = useState<QuestionDraft[]>([]);
   const [tags, setTags] = useState<string[]>([]);
@@ -96,7 +99,7 @@ export function QuizBuilderPage() {
 
   const quizQuery = useQuery({
     queryKey: ['quiz', id],
-    queryFn: () => api.quizzes.get(id as string),
+    queryFn: () => repo.get(id as string),
     enabled: isEdit,
   });
 
@@ -119,7 +122,7 @@ export function QuizBuilderPage() {
 
   const mutation = useMutation({
     mutationFn: (input: SaveQuizInput) =>
-      isEdit ? api.quizzes.update(id as string, input) : api.quizzes.create(input),
+      isEdit ? repo.update(id as string, input) : repo.create(input),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['quizzes'] });
       toast.success(isEdit ? 'Quiz updated' : 'Quiz created');
@@ -210,6 +213,22 @@ export function QuizBuilderPage() {
               </Button>
             </div>
           </div>
+
+          {!isAuthenticated && (
+            <Alert>
+              <Info />
+              <AlertDescription>
+                You&apos;re working as a guest — this quiz is saved on this device only.{' '}
+                <Link
+                  to="/register"
+                  className="font-medium text-primary underline-offset-4 hover:underline"
+                >
+                  Sign in to save it permanently
+                </Link>{' '}
+                and sync across devices.
+              </AlertDescription>
+            </Alert>
+          )}
 
           {formError && (
             <Alert variant="destructive">

@@ -12,10 +12,15 @@ import type { LoginInput, RegisterInput } from '@matal/validation';
 import { PrismaService } from '../../database/prisma.service';
 import { PasswordService } from '../security/password.service';
 import { EmailService } from '../email/email.service';
+import { randomUUID } from 'node:crypto';
 import { randomToken, sha256 } from '../../common/hash.util';
 import type { AppConfig } from '../../config/configuration';
 import { toPublicUser } from '../users/user.mapper';
-import type { JwtPayload } from './auth.types';
+import {
+  GUEST_TOKEN_TTL_SECONDS,
+  type GuestJwtPayload,
+  type JwtPayload,
+} from './auth.types';
 
 /** Result of a successful auth operation — cookies are set by the controller. */
 export interface AuthResult {
@@ -74,6 +79,35 @@ export class AuthService {
     if (!ok) throw invalid;
 
     return this.issueSession(user);
+  }
+
+  // ── Guest (anonymous) sessions ────────────────────────────────────
+
+  /**
+   * Resolves a stable guest identity. If a valid guest token is presented it is
+   * reused (so identity survives reloads); otherwise a fresh one is minted.
+   * Returns `token` only when a new token was issued — the caller sets the
+   * cookie in that case.
+   */
+  async ensureGuest(
+    rawGuestToken: string | undefined,
+  ): Promise<{ guestId: string; token: string | null }> {
+    if (rawGuestToken) {
+      try {
+        const payload = await this.jwt.verifyAsync<GuestJwtPayload>(rawGuestToken);
+        if (payload.guest && payload.sub) {
+          return { guestId: payload.sub, token: null };
+        }
+      } catch {
+        // Fall through and mint a new token.
+      }
+    }
+    const guestId = randomUUID();
+    const token = await this.jwt.signAsync(
+      { sub: guestId, guest: true } satisfies GuestJwtPayload,
+      { expiresIn: GUEST_TOKEN_TTL_SECONDS },
+    );
+    return { guestId, token };
   }
 
   // ── Session lifecycle ─────────────────────────────────────────────

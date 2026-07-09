@@ -12,7 +12,7 @@ import { Badge } from '@/components/ui/badge';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { cn } from '@/lib/cn';
-import { api } from '@/lib/api';
+import { useQuizRepository } from '@/hooks/useQuizRepository';
 
 const TYPE_LABELS: Record<QuestionType, string> = {
   [QuestionType.MultipleChoice]: 'Multiple choice',
@@ -99,9 +99,11 @@ function QuestionBody({ question }: { question: PublicQuestion }) {
 /** Read-only preview of a quiz — its metadata and every question's answer key. */
 export function QuizDetailPage() {
   const { id = '' } = useParams();
+  const repo = useQuizRepository();
   const quizQuery = useQuery({
     queryKey: ['quiz', id],
-    queryFn: () => api.quizzes.get(id),
+    queryFn: () => repo.get(id),
+    retry: false,
   });
 
   const quiz = quizQuery.data;

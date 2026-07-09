@@ -112,6 +112,9 @@ export function TopBar() {
             <UserMenu />
           ) : (
             <div className="flex items-center gap-2">
+              <Button variant="ghost" size="sm" asChild className="hidden sm:inline-flex">
+                <Link to="/quizzes">My quizzes</Link>
+              </Button>
               <Button variant="ghost" size="sm" asChild>
                 <Link to="/login">Sign in</Link>
               </Button>

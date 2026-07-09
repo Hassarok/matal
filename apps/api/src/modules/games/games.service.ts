@@ -15,7 +15,7 @@ import {
   type QuestionReveal,
   type GamePodium,
 } from '@matal/shared-types';
-import type { PaginationQuery } from '@matal/validation';
+import type { LiveQuizInput, PaginationQuery } from '@matal/validation';
 import { PrismaService } from '../../database/prisma.service';
 import { randomToken } from '../../common/hash.util';
 import { GameStateStore } from './game-state.store';
@@ -54,30 +54,39 @@ export class GamesService {
 
   // ── Creation & membership ─────────────────────────────────────────
 
+  /**
+   * Creates a live game from a client-supplied quiz snapshot. Both guests and
+   * signed-in users host through this one path — the engine runs entirely from
+   * the snapshot, so no quiz needs to exist in the database. For signed-in
+   * hosts we link the game back to a saved quiz (for reports) only when the
+   * given `quizId` is genuinely owned by them; guest games are never persisted.
+   */
   async createGame(
-    hostId: string,
-    quizId: string,
+    host: { id: string; isGuest: boolean },
+    quiz: LiveQuizInput,
     hostSocketId: string,
   ): Promise<GameSession> {
-    const quiz = await this.prisma.quiz.findFirst({
-      where: { id: quizId, ownerId: hostId },
-      include: { questions: true },
-    });
-    if (!quiz) throw new GameActionError('Quiz not found.');
-
-    const questions: LoadedQuestion[] = [...quiz.questions]
-      .sort((a, b) => a.order - b.order)
-      .map((q, index) => ({
-        index,
-        type: q.type as QuestionType,
-        prompt: q.prompt,
-        mediaUrl: q.mediaUrl,
-        explanation: q.explanation,
-        timeLimitSeconds: q.timeLimitSeconds,
-        points: q.points,
-        content: q.content as unknown as QuestionContent,
-      }));
+    const questions: LoadedQuestion[] = quiz.questions.map((q, index) => ({
+      index,
+      type: q.type as QuestionType,
+      prompt: q.prompt,
+      mediaUrl: q.mediaUrl ?? null,
+      explanation: null,
+      timeLimitSeconds: q.timeLimitSeconds,
+      points: q.points,
+      content: q.content as unknown as QuestionContent,
+    }));
     if (questions.length === 0) throw new GameActionError('This quiz has no questions yet.');
+
+    // Link to a saved quiz for reports only when the signed-in host owns it.
+    let linkedQuizId: string | null = null;
+    if (!host.isGuest && quiz.quizId) {
+      const owned = await this.prisma.quiz.findFirst({
+        where: { id: quiz.quizId, ownerId: host.id },
+        select: { id: true },
+      });
+      linkedQuizId = owned?.id ?? null;
+    }
 
     let pin = generatePin();
     while (this.store.pinExists(pin)) pin = generatePin();
@@ -85,9 +94,10 @@ export class GamesService {
     const session: GameSession = {
       id: randomUUID(),
       pin,
-      hostId,
+      hostId: host.id,
+      hostUserId: host.isGuest ? null : host.id,
       hostSocketId,
-      quizId,
+      quizId: linkedQuizId,
       quizTitle: quiz.title,
       questions,
       phase: GamePhase.Lobby,
@@ -443,6 +453,9 @@ export class GamesService {
   }
 
   private async persist(session: GameSession): Promise<void> {
+    // Guest-hosted games have no owning User row to attach to — completed-game
+    // history and reports are an account feature, so we simply skip persistence.
+    if (!session.hostUserId) return;
     try {
       const players = [...session.players.values()];
       const rankById = new Map(
@@ -452,7 +465,7 @@ export class GamesService {
         data: {
           pin: session.pin,
           quizId: session.quizId ?? undefined,
-          hostId: session.hostId,
+          hostId: session.hostUserId,
           quizTitle: session.quizTitle,
           questionCount: session.questions.length,
           playerCount: players.length,

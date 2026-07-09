@@ -1,4 +1,5 @@
 import type { QuestionType } from './enums';
+import type { QuestionContent } from './quiz';
 
 /** Socket.IO event names shared by client and server (single source of truth). */
 export const GameEvents = {
@@ -24,6 +25,36 @@ export const GameEvents = {
   GameEnded: 'game:ended',
   GameError: 'game:error',
 } as const;
+
+/**
+ * A single question in a live-hosting snapshot. Mirrors the relevant fields of
+ * a stored question; the host client sends this so guests (whose quizzes live
+ * only in the browser) and signed-in users share one hosting path.
+ */
+export interface LiveQuestionInput {
+  type: QuestionType;
+  prompt: string;
+  mediaUrl?: string | null;
+  timeLimitSeconds: number;
+  points: number;
+  content: QuestionContent;
+}
+
+/**
+ * The quiz snapshot a host sends to start a live game. `quizId` links a
+ * completed game back to a saved quiz for reports (signed-in hosts only); it is
+ * omitted for guest/local quizzes.
+ */
+export interface LiveQuizInput {
+  quizId?: string | null;
+  title: string;
+  questions: LiveQuestionInput[];
+}
+
+/** Payload for the {@link GameEvents.HostCreate} socket message. */
+export interface HostCreatePayload {
+  quiz: LiveQuizInput;
+}
 
 export interface LobbyPlayer {
   id: string;

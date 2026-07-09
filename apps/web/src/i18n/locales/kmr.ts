@@ -12,6 +12,7 @@ export const kmr: PartialTranslation = {
       'Platformeke nûjen a ku ji çanda kurdî hatiye îlhamgirtin ji bo quizên înteraktîf û lîstikên zindî. Odeyekê veke, PIN parve bike û mirovan bîne cem hev.',
     ctaPrimary: 'Dîtinê keşf bike',
     ctaSecondary: 'PIN-a lîstikê binivîse',
+    ctaCreate: 'Quizekê çêbike',
   },
   footer: {
     note: 'MATAL — bi ruhekî kurdî hatiye çêkirin, ji bo herkesî.',

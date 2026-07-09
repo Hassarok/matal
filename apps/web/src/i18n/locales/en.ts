@@ -10,6 +10,7 @@ export const en = {
       'A modern, Kurdish-inspired platform for interactive quizzes and live games. Host a room, share a PIN, and bring people together — anywhere in the world.',
     ctaPrimary: 'Explore the vision',
     ctaSecondary: 'Enter a game PIN',
+    ctaCreate: 'Create a quiz',
   },
   status: {
     heading: 'System status',

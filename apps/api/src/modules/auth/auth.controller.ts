@@ -29,7 +29,7 @@ import { AuthService } from './auth.service';
 import { AuthCookieService } from './auth-cookie.service';
 import { JwtAuthGuard } from './guards/jwt-auth.guard';
 import { CurrentUser } from './decorators/current-user.decorator';
-import { REFRESH_COOKIE, type AuthenticatedUser } from './auth.types';
+import { GUEST_COOKIE, REFRESH_COOKIE, type AuthenticatedUser } from './auth.types';
 import { UsersService } from '../users/users.service';
 
 /** Rate limit for sensitive auth actions: 5 requests / minute per IP. */
@@ -51,6 +51,7 @@ export class AuthController {
   ): Promise<SessionResponse> {
     const { user, accessToken, refreshToken } = await this.authService.register(dto);
     this.cookies.setAuthCookies(res, accessToken, refreshToken);
+    this.cookies.clearGuestCookie(res);
     return { user };
   }
 
@@ -63,7 +64,25 @@ export class AuthController {
   ): Promise<SessionResponse> {
     const { user, accessToken, refreshToken } = await this.authService.login(dto);
     this.cookies.setAuthCookies(res, accessToken, refreshToken);
+    this.cookies.clearGuestCookie(res);
     return { user };
+  }
+
+  /**
+   * Ensures the caller has an anonymous guest session (idempotent). Lets a
+   * visitor host live games and be identified across reconnects without an
+   * account. Reuses an existing valid guest cookie; otherwise mints one.
+   */
+  @Post('guest')
+  @HttpCode(HttpStatus.OK)
+  async guest(
+    @Req() req: Request,
+    @Res({ passthrough: true }) res: Response,
+  ): Promise<{ guestId: string }> {
+    const raw = req.cookies?.[GUEST_COOKIE] as string | undefined;
+    const { guestId, token } = await this.authService.ensureGuest(raw);
+    if (token) this.cookies.setGuestCookie(res, token);
+    return { guestId };
   }
 
   @Post('refresh')

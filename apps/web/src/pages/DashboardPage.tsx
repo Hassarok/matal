@@ -1,11 +1,12 @@
 import { Link } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
-import { Gamepad2, History, LibraryBig, Plus, Trophy, Users } from 'lucide-react';
+import { Gamepad2, History, LibraryBig, LogIn, Plus, Trophy, Users } from 'lucide-react';
 import type { GameSummary, QuizListItem } from '@matal/shared-types';
 import { TopBar } from '@/components/layout/TopBar';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Skeleton } from '@/components/ui/skeleton';
+import { Alert, AlertDescription } from '@/components/ui/alert';
 import {
   Card,
   CardContent,
@@ -14,6 +15,7 @@ import {
   CardTitle,
 } from '@/components/ui/card';
 import { useAuth } from '@/hooks/useAuth';
+import { useQuizRepository } from '@/hooks/useQuizRepository';
 import { api } from '@/lib/api';
 
 function QuickAction({
@@ -93,15 +95,18 @@ function RecentGame({ game }: { game: GameSummary }) {
  * most recent quizzes and hosted games.
  */
 export function DashboardPage() {
-  const { user } = useAuth();
+  const { user, isAuthenticated } = useAuth();
+  const repo = useQuizRepository();
 
   const quizzesQuery = useQuery({
     queryKey: ['quizzes', { dashboard: true }],
-    queryFn: () => api.quizzes.list({ pageSize: 5, sort: 'recent' }),
+    queryFn: () => repo.list({ pageSize: 5, sort: 'recent' }),
   });
   const gamesQuery = useQuery({
     queryKey: ['games', 'history', { dashboard: true }],
     queryFn: () => api.games.history({ pageSize: 5 }),
+    // Hosted-game history is an account feature; guests have none to fetch.
+    enabled: isAuthenticated,
   });
 
   const quizzes = quizzesQuery.data?.items ?? [];
@@ -114,12 +119,28 @@ export function DashboardPage() {
         <main className="grid gap-8 py-6">
           <div>
             <h1 className="font-display text-3xl font-extrabold tracking-tight">
-              Welcome back{user ? `, ${user.displayName}` : ''} 👋
+              {user ? `Welcome back, ${user.displayName}` : 'Welcome to MATAL'} 👋
             </h1>
             <p className="text-sm text-muted-foreground">
               Create a quiz, host a live game, or pick up where you left off.
             </p>
           </div>
+
+          {!isAuthenticated && (
+            <Alert>
+              <LogIn />
+              <AlertDescription>
+                You&apos;re browsing as a guest. Your quizzes are saved on this device.{' '}
+                <Link
+                  to="/register"
+                  className="font-medium text-primary underline-offset-4 hover:underline"
+                >
+                  Create an account
+                </Link>{' '}
+                to save them permanently, sync across devices, and keep game reports.
+              </AlertDescription>
+            </Alert>
+          )}
 
           <div className="grid gap-3 sm:grid-cols-3">
             <QuickAction
@@ -189,7 +210,19 @@ export function DashboardPage() {
                 </Button>
               </CardHeader>
               <CardContent className="grid gap-2">
-                {gamesQuery.isLoading ? (
+                {!isAuthenticated ? (
+                  <div className="flex flex-col items-center gap-3 py-6 text-center">
+                    <History className="size-8 text-muted-foreground" />
+                    <p className="text-sm text-muted-foreground">
+                      Sign in to keep a history of the games you host.
+                    </p>
+                    <Button asChild size="sm" variant="outline">
+                      <Link to="/login">
+                        <LogIn /> Sign in
+                      </Link>
+                    </Button>
+                  </div>
+                ) : gamesQuery.isLoading ? (
                   Array.from({ length: 3 }).map((_, i) => (
                     <Skeleton key={i} className="h-14 w-full" />
                   ))

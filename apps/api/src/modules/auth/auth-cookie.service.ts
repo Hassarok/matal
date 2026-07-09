@@ -2,7 +2,12 @@ import { Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import type { CookieOptions, Response } from 'express';
 import type { AppConfig } from '../../config/configuration';
-import { ACCESS_COOKIE, REFRESH_COOKIE } from './auth.types';
+import {
+  ACCESS_COOKIE,
+  GUEST_COOKIE,
+  GUEST_TOKEN_TTL_SECONDS,
+  REFRESH_COOKIE,
+} from './auth.types';
 
 /**
  * Centralises auth cookie handling. Tokens are stored in httpOnly cookies
@@ -46,5 +51,23 @@ export class AuthCookieService {
     const { domain } = this.baseOptions();
     res.clearCookie(ACCESS_COOKIE, { path: '/', domain });
     res.clearCookie(REFRESH_COOKIE, { path: this.refreshPath, domain });
+  }
+
+  /**
+   * Stores a guest token in a long-lived httpOnly cookie. Separate from the
+   * access cookie so guests never satisfy the real-user JWT guard, yet the game
+   * gateway can still resolve a stable host identity from the handshake.
+   */
+  setGuestCookie(res: Response, guestToken: string): void {
+    res.cookie(GUEST_COOKIE, guestToken, {
+      ...this.baseOptions(),
+      path: '/',
+      maxAge: GUEST_TOKEN_TTL_SECONDS * 1000,
+    });
+  }
+
+  clearGuestCookie(res: Response): void {
+    const { domain } = this.baseOptions();
+    res.clearCookie(GUEST_COOKIE, { path: '/', domain });
   }
 }

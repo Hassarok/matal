@@ -104,6 +104,31 @@ export const saveQuizSchema = quizMetaSchema.extend({
 });
 export type SaveQuizInput = z.infer<typeof saveQuizSchema>;
 
+/**
+ * A quiz snapshot sent by a host to start a live game. Unlike {@link saveQuizSchema}
+ * this validates the transport shape only (type-specific answer data lives in
+ * the opaque `content` object, which the game engine interprets by type). Both
+ * guest and signed-in hosts send this, so hosting has a single code path.
+ */
+export const liveQuestionSchema = z.object({
+  type: z.nativeEnum(QuestionType),
+  prompt: z.string().trim().min(1).max(500),
+  mediaUrl: z.string().max(2048).nullish(),
+  timeLimitSeconds: z.coerce.number().int().min(5).max(300),
+  points: z.coerce.number().int().min(0).max(2000),
+  content: z.record(z.string(), z.unknown()),
+});
+
+export const liveQuizSchema = z.object({
+  quizId: z.string().nullish(),
+  title: z.string().trim().min(1).max(120),
+  questions: z
+    .array(liveQuestionSchema)
+    .min(1, 'Add at least one question before hosting.')
+    .max(100),
+});
+export type LiveQuizInput = z.infer<typeof liveQuizSchema>;
+
 /** How a quiz list is ordered. */
 export const quizSortOptions = ['recent', 'oldest', 'title'] as const;
 export type QuizSort = (typeof quizSortOptions)[number];

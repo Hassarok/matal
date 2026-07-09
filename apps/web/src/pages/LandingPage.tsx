@@ -39,10 +39,10 @@ export function LandingPage() {
 
             <div className="mt-8 flex flex-col items-center gap-3 sm:flex-row lg:items-start">
               <Button asChild variant="gradient" size="lg">
-                <Link to="/join">{t('hero.ctaSecondary')}</Link>
+                <Link to="/quizzes/new">{t('hero.ctaCreate')}</Link>
               </Button>
               <Button asChild variant="outline" size="lg">
-                <Link to="/style-guide">{t('hero.ctaPrimary')}</Link>
+                <Link to="/join">{t('hero.ctaSecondary')}</Link>
               </Button>
             </div>
 

@@ -1,6 +1,12 @@
+import { useMemo } from 'react';
 import { Link, useParams } from 'react-router-dom';
+import { useQuery } from '@tanstack/react-query';
 import { Check, PartyPopper, Play, SkipForward, Trophy, Users, X } from 'lucide-react';
-import { QuestionType, type AnswerDistribution } from '@matal/shared-types';
+import {
+  QuestionType,
+  type AnswerDistribution,
+  type LiveQuizInput,
+} from '@matal/shared-types';
 import { StarSpinner } from '@/components/brand/StarSpinner';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -9,6 +15,9 @@ import { cn } from '@/lib/cn';
 import { CountdownTimer } from '@/components/game/CountdownTimer';
 import { Leaderboard } from '@/components/game/Leaderboard';
 import { useHostGame, type HostGameControls } from '@/hooks/useHostGame';
+import { useQuizRepository } from '@/hooks/useQuizRepository';
+import { useGuestSession } from '@/hooks/useGuestSession';
+import { isLocalId } from '@/lib/quizStore';
 
 function Screen({ children }: { children: React.ReactNode }) {
   return (
@@ -101,7 +110,53 @@ function AnswerKey({ question }: { question: NonNullable<HostGameControls['quest
  */
 export function HostGamePage() {
   const { quizId = '' } = useParams();
-  const game = useHostGame(quizId);
+  const repo = useQuizRepository();
+  const guestReady = useGuestSession();
+
+  const quizQuery = useQuery({
+    queryKey: ['quiz', quizId],
+    queryFn: () => repo.get(quizId),
+    enabled: Boolean(quizId),
+    retry: false,
+  });
+
+  // Snapshot sent to the server. Held back (null) until the quiz has loaded and
+  // a guest identity is ready, so the socket connects exactly once with data.
+  const snapshot = useMemo<LiveQuizInput | null>(() => {
+    const quiz = quizQuery.data;
+    if (!quiz || !guestReady || quiz.questions.length === 0) return null;
+    return {
+      quizId: isLocalId(quiz.id) ? null : quiz.id,
+      title: quiz.title,
+      questions: quiz.questions.map((q) => ({
+        type: q.type,
+        prompt: q.prompt,
+        mediaUrl: q.mediaUrl,
+        timeLimitSeconds: q.timeLimitSeconds,
+        points: q.points,
+        content: q.content,
+      })),
+    };
+  }, [quizQuery.data, guestReady]);
+
+  const game = useHostGame(snapshot);
+
+  // Quiz couldn't be loaded, or has no questions to host.
+  if (quizQuery.isError || (quizQuery.data && quizQuery.data.questions.length === 0)) {
+    return (
+      <Screen>
+        <div className="flex flex-1 flex-col items-center justify-center gap-4 text-center">
+          <X className="size-12 text-destructive" />
+          <p className="text-lg font-semibold">
+            {quizQuery.data ? 'Add a question before hosting this quiz.' : 'Quiz not found.'}
+          </p>
+          <Button asChild variant="outline">
+            <Link to="/quizzes">Back to my quizzes</Link>
+          </Button>
+        </div>
+      </Screen>
+    );
+  }
 
   if (game.error && (game.phase === 'connecting' || !game.pin)) {
     return (
