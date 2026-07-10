@@ -1,6 +1,7 @@
 # Keep the build context small and deterministic — installs happen in-image.
 **/node_modules
 **/dist
+**/*.tsbuildinfo
 **/coverage
 **/.turbo
 .git

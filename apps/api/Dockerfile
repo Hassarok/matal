@@ -19,7 +19,7 @@ COPY . .
 # references chain and builds shared-types first, then validation.
 # Finally generate the Prisma client and compile the NestJS app.
 RUN npm ci --ignore-scripts && \
-    npx tsc --build packages/validation/tsconfig.json && \
+    npx tsc --build packages/validation/tsconfig.json --force && \
     npm run db:generate --workspace @matal/api && \
     npm run build --workspace @matal/api
 
